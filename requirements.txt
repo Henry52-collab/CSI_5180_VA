@@ -1,0 +1,12 @@
+flask
+python-dotenv
+requests
+torch
+transformers
+openai-whisper
+librosa
+scikit-learn
+pyttsx3
+sounddevice
+soundfile
+numpy
