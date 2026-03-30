@@ -18,6 +18,22 @@ All training data uses **inline annotation** format from Activity 2:
 
 Slot labels stay UPPERCASE. Each sentence on its own line in a Python list. Aim for **variety in phrasing** (not just swapping entity names). Include some sentences **without slots** where applicable (e.g., "feed the pet" with no food_type is valid).
 
+**All training data goes in `data/intents/training_data.py`.** Each intent has a named list (e.g., `get_movie_cast_examples = [...]`). The `intent_map` dict at the bottom registers all intents. Run `python data/intents/training_data.py` to check progress.
+
+### Basic intents — already in repo (152 sentences)
+
+These 5 intents were adapted from Activity 2 and are **already filled in** `training_data.py`:
+
+| Intent | Count | Status |
+|--------|-------|--------|
+| `greetings` | 30 | Done — copied as-is |
+| `goodbye` | 30 | Done — copied as-is |
+| `oos` | 30 | Done — but needs ~20 more (see Task 3) |
+| `set_timer` | 30 | Done — `/B-NAME` tags removed |
+| `weather` | 32 | Done — `/B-DAY` `/I-DAY` tags removed |
+
+No task needed for these — just review them if you want.
+
 ### Task 1: [ ] Movie intents — batch A
 
 Write training sentences for these 3 intents (~90 sentences total):
@@ -52,7 +68,7 @@ Write training sentences + clean up reusable data (~65 new sentences):
 | `get_upcoming_movies` | (none) | 20 | `"what new movies are coming out"` |
 | supplement `oos` | (none) | +20 | `"order me a pizza"`, `"play some jazz music"` |
 
-Also: copy the 5 reusable intent lists from Activity 2 notebook into the project. For `set_timer`, remove all `/B-NAME` tags. For `weather`, remove all `/B-DAY` and `/I-DAY` tags.
+The OOS supplement should add examples that sound like they *could* be movie/pet requests but aren't covered intents (e.g., "who won best picture last year", "can my pet learn tricks").
 
 ### Task 4: [ ] Pet intents — batch A
 
