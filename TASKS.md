@@ -52,19 +52,19 @@ Completed: 90 sentences integrated into `training_data.py`. German genre names r
 
 Completed: 23 + 20 + 20 = 63 sentences integrated into `training_data.py`.
 
-### Task 4: [x] Pet intents — batch A (Frank + Fengshou + Claude)
+### Task 4: [x] Pet intents — batch A (Fengshou)
 
 ~~Write training sentences for feed_pet, play_with_pet, pet_the_cat.~~
 
 Completed: 34 + 25 + 20 = 79 sentences integrated into `training_data.py`.
 
-### Task 5: [x] Pet intents — batch B (Claude)
+### Task 5: [x] Pet intents — batch B (Fengshou)
 
 ~~Write training sentences for wash_pet, put_to_sleep, wake_up_pet.~~
 
 Completed: 20 + 20 + 20 = 60 sentences integrated into `training_data.py`.
 
-### Task 6: [x] Pet intents — batch C (Claude)
+### Task 6: [x] Pet intents — batch C (Fengshou)
 
 ~~Write training sentences for give_treat, check_status, rename_pet.~~
 
