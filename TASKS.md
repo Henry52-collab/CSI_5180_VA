@@ -52,43 +52,29 @@ Completed: 90 sentences integrated into `training_data.py`. German genre names r
 
 Completed: 23 + 20 + 20 = 63 sentences integrated into `training_data.py`.
 
-### Task 4: [ ] Pet intents — batch A(Frank)
+### Task 4: [x] Pet intents — batch A (Frank + Fengshou + Claude)
 
-Write training sentences for these 3 intents (~70 sentences total):
+~~Write training sentences for feed_pet, play_with_pet, pet_the_cat.~~
 
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `feed_pet` | FOOD_TYPE | 25 | `"feed the pet some fish/B-FOOD_TYPE"` |
-| `play_with_pet` | TOY | 25 | `"play with the pet using a ball/B-TOY"` |
-| `pet_the_cat` | (none) | 20 | `"give the pet some cuddles"` |
+Completed: 34 + 25 + 20 = 79 sentences integrated into `training_data.py`.
 
-**Remember:** Include sentences both with and without the optional slot (e.g., "feed the pet" with no food_type is valid).
+### Task 5: [x] Pet intents — batch B (Claude)
 
-### Task 5: [ ] Pet intents — batch B(Frank)
+~~Write training sentences for wash_pet, put_to_sleep, wake_up_pet.~~
 
-Write training sentences for these 3 intents (~60 sentences total):
+Completed: 20 + 20 + 20 = 60 sentences integrated into `training_data.py`.
 
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `wash_pet` | (none) | 20 | `"give the pet a bath"` |
-| `put_to_sleep` | DURATION | 20 | `"put the pet to sleep for 2/B-DURATION hours/I-DURATION"` |
-| `wake_up_pet` | (none) | 20 | `"wake the pet up"` |
+### Task 6: [x] Pet intents — batch C (Claude)
 
-### Task 6: [ ] Pet intents — batch C(Frank)
+~~Write training sentences for give_treat, check_status, rename_pet.~~
 
-Write training sentences for these 3 intents (~60 sentences total):
-
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `give_treat` | TREAT_TYPE | 20 | `"give the pet a cookie/B-TREAT_TYPE"` |
-| `check_status` | (none) | 20 | `"how is my pet doing"` |
-| `rename_pet` | NAME | 20 | `"name the pet Mochi/B-NAME"` |
+Completed: 20 + 20 + 20 = 60 sentences integrated into `training_data.py`.
 
 ---
 
 ## Phase 2: ML Modules (can start once you have Activity code)
 
-### Task 7: [ ] User Verification module(Henry)
+### Task 7: [Henry] User Verification module
 
 Build the speaker verification module (Module 1).
 
@@ -103,7 +89,7 @@ Build the speaker verification module (Module 1).
 - `pipeline/user_verification.py` — module with `process(audio)` and `bypass(code)`
 - `training/train_verification.py` — training script
 
-### Task 8: [ ] Wake Word Detection module(Henry)
+### Task 8: [Henry] Wake Word Detection module
 
 Build the wake word detection module (Module 2).
 

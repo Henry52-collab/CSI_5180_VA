@@ -463,74 +463,243 @@ get_upcoming_movies_examples = [
 ]
 
 # ===========================================================================
-# PET INTENTS (NEW — to be filled by Tasks 4, 5, 6)
+# PET INTENTS (Tasks 4, 5, 6 — Fengshou + Claude)
 # ===========================================================================
 
 feed_pet_examples = [
-        "feed the pet some fish/B-FOOD_TYPE",
-      "give the pet chicken/B-FOOD_TYPE",
-      "feed my pet some kibble/B-FOOD_TYPE",
-      "give food to the pet",
-      "feed the cat",
-      "can you feed the pet tuna/B-FOOD_TYPE",
-      "I want to feed my pet some beef/B-FOOD_TYPE",
-      "please give the pet a snack/B-FOOD_TYPE",
-      "feed the pet",
-      "time to feed the pet some salmon/B-FOOD_TYPE",
-      "give my pet some dry/B-FOOD_TYPE food/I-FOOD_TYPE",
-      "I need to feed the cat",
-      "the pet is hungry feed it",
-      "feed the pet some wet/B-FOOD_TYPE food/I-FOOD_TYPE",
-      "can you give the pet milk/B-FOOD_TYPE",
-      "please feed my pet",
-      "let me feed the pet some rice/B-FOOD_TYPE",
-      "give the pet something to eat",
-      "feed my cat some turkey/B-FOOD_TYPE",
-      "I would like to feed the pet shrimp/B-FOOD_TYPE",
-      "go ahead and feed the pet",
-      "the cat needs food",
-      "serve the pet some lamb/B-FOOD_TYPE",
-      "it is meal time for the pet",
-      "feed the pet some vegetables/B-FOOD_TYPE",]
+    # Contributions from Fengshou, Frank, and Claude
+    "feed the pet",
+    "feed the pet some fish/B-FOOD_TYPE",
+    "give my pet some dry/B-FOOD_TYPE food/I-FOOD_TYPE",
+    "give my pet a piece of chocolate/B-FOOD_TYPE",
+    "feed my pet some potato/B-FOOD_TYPE chips/I-FOOD_TYPE",
+    "treat my pet a slice of pizza/B-FOOD_TYPE",
+    "let my pet have a donut/B-FOOD_TYPE",
+    "let my pet have a hamburger/B-FOOD_TYPE",
+    "treat my pet with some chicken/B-FOOD_TYPE nuggets/I-FOOD_TYPE",
+    "toss it a handful of grapes/B-FOOD_TYPE",
+    "give my pet a scoop of ice/B-FOOD_TYPE cream/I-FOOD_TYPE",
+    "feed it some kibble/B-FOOD_TYPE",
+    "give the pet a banana/B-FOOD_TYPE",
+    "I want to feed my pet",
+    "can you feed the pet some tuna/B-FOOD_TYPE",
+    "the pet looks hungry feed it",
+    "give it some leftover steak/B-FOOD_TYPE",
+    "feed the pet a bowl of rice/B-FOOD_TYPE",
+    "let the pet eat some carrots/B-FOOD_TYPE",
+    "my pet is starving give it food",
+    "please feed the pet some salmon/B-FOOD_TYPE",
+    "hand the pet a piece of bread/B-FOOD_TYPE",
+    "time to feed my pet",
+    "get the pet some cat/B-FOOD_TYPE food/I-FOOD_TYPE",
+    "feed my pet a sardine/B-FOOD_TYPE",
+    # From Frank
+    "give the pet chicken/B-FOOD_TYPE",
+    "I want to feed my pet some beef/B-FOOD_TYPE",
+    "please give the pet a snack/B-FOOD_TYPE",
+    "feed the pet some wet/B-FOOD_TYPE food/I-FOOD_TYPE",
+    "can you give the pet milk/B-FOOD_TYPE",
+    "feed my cat some turkey/B-FOOD_TYPE",
+    "I would like to feed the pet shrimp/B-FOOD_TYPE",
+    "serve the pet some lamb/B-FOOD_TYPE",
+    "feed the pet some vegetables/B-FOOD_TYPE",
+]
 
 play_with_pet_examples = [
-    # TODO (Task 4): ~25 sentences with optional TOY slot
-    # "play with the pet using a ball/B-TOY"
+    # Partially written by Fengshou, completed by Claude
+    "play with the pet",
+    "play with the pet using a ball/B-TOY",
+    "let the pet play with the squeaky/B-TOY toy/I-TOY",
+    "I want to play with my pet",
+    "can we play with the pet",
+    "play with the pet using a frisbee/B-TOY",
+    "let my pet play with some yarn/B-TOY",
+    "grab the rope/B-TOY and play with the pet",
+    "let the pet chase a laser/B-TOY pointer/I-TOY",
+    "play fetch with the pet using a stick/B-TOY",
+    "get the teddy/B-TOY bear/I-TOY and play with the pet",
+    "time to play with the pet",
+    "let the pet play around",
+    "can you play with the pet for a bit",
+    "I want to play with it using a feather/B-TOY wand/I-TOY",
+    "let the pet play with the rubber/B-TOY duck/I-TOY",
+    "go play with the pet",
+    "play with my pet using a toy/B-TOY mouse/I-TOY",
+    "take out the ball/B-TOY and play with the pet",
+    "have some fun with the pet",
+    "the pet wants to play",
+    "let it play with the stuffed/B-TOY animal/I-TOY",
+    "play a game with the pet",
+    "give the pet something to play with",
+    "play tug of war with the pet using a rope/B-TOY",
 ]
 
 pet_the_cat_examples = [
-    # TODO (Task 4): ~20 sentences, no slots
-    # "give the pet some cuddles"
+    # Tasks 4
+    "pet the cat",
+    "give the pet some cuddles",
+    "stroke my pet gently",
+    "I want to pet it",
+    "give it a nice pat",
+    "can you pet the pet for me",
+    "rub the pet's belly",
+    "scratch behind its ears",
+    "give the pet a gentle stroke",
+    "let me cuddle my pet",
+    "I want to give it some affection",
+    "pat the pet on the head",
+    "pet it softly",
+    "show the pet some love",
+    "caress the pet",
+    "snuggle with my pet",
+    "give it a hug",
+    "the pet wants some attention",
+    "hold the pet and pet it",
+    "give my pet a scratch",
 ]
 
 wash_pet_examples = [
-    # TODO (Task 5): ~20 sentences, no slots
-    # "give the pet a bath"
+    # Task 5
+    "wash the pet",
+    "give the pet a bath",
+    "my pet needs a good scrub",
+    "bathe my pet please",
+    "the pet is dirty wash it",
+    "can you clean the pet",
+    "time to give the pet a bath",
+    "my pet needs a wash",
+    "scrub the pet clean",
+    "let me wash my pet",
+    "the pet smells bad give it a bath",
+    "clean up the pet",
+    "the pet needs grooming",
+    "I want to bathe the pet",
+    "rinse off the pet",
+    "give my pet a shower",
+    "wash my pet it's filthy",
+    "the pet could use a good cleaning",
+    "go wash the pet",
+    "it's bath time for the pet",
 ]
 
 put_to_sleep_examples = [
-    # TODO (Task 5): ~20 sentences with optional DURATION slot
-    # "put the pet to sleep for 2/B-DURATION hours/I-DURATION"
+    # Task 5
+    "put the pet to sleep",
+    "let the pet nap for 2/B-DURATION hours/I-DURATION",
+    "put the pet to bed for 30/B-DURATION minutes/I-DURATION",
+    "the pet needs some rest",
+    "let the pet sleep for 1/B-DURATION hour/I-DURATION",
+    "send the pet to sleep",
+    "time for the pet to take a nap",
+    "make the pet go to sleep for 45/B-DURATION minutes/I-DURATION",
+    "put it to bed",
+    "let it rest for 3/B-DURATION hours/I-DURATION",
+    "my pet is tired put it to sleep",
+    "the pet should go to bed",
+    "tuck the pet in",
+    "let my pet have a nap for 20/B-DURATION minutes/I-DURATION",
+    "let the pet rest",
+    "put the pet down for a nap",
+    "the pet looks sleepy let it rest for 90/B-DURATION minutes/I-DURATION",
+    "send it to bed",
+    "my pet needs a nap",
+    "let it sleep for 15/B-DURATION minutes/I-DURATION",
 ]
 
 wake_up_pet_examples = [
-    # TODO (Task 5): ~20 sentences, no slots
-    # "wake the pet up"
+    # Task 5
+    "wake up the pet",
+    "wake the pet up",
+    "get the pet up already",
+    "time to wake the pet",
+    "rise and shine little pet",
+    "can you wake the pet",
+    "wake it up",
+    "the pet needs to get up",
+    "get the pet out of bed",
+    "it's time for the pet to wake up",
+    "my pet has been sleeping long enough",
+    "wake my pet up please",
+    "hey pet time to get up",
+    "stop the pet from sleeping",
+    "rouse the pet",
+    "the pet should wake up now",
+    "poke the pet awake",
+    "nudge the pet to wake up",
+    "get it up",
+    "come on pet wake up",
 ]
 
 give_treat_examples = [
-    # TODO (Task 6): ~20 sentences with optional TREAT_TYPE slot
-    # "give the pet a cookie/B-TREAT_TYPE"
+    # Task 6
+    "give the pet a treat",
+    "give the pet a cookie/B-TREAT_TYPE",
+    "treat the pet with a peanut/B-TREAT_TYPE butter/I-TREAT_TYPE biscuit/I-TREAT_TYPE",
+    "let the pet have a snack",
+    "give my pet a bone/B-TREAT_TYPE",
+    "hand the pet a biscuit/B-TREAT_TYPE",
+    "reward the pet with a treat",
+    "give it a piece of jerky/B-TREAT_TYPE",
+    "the pet deserves a treat",
+    "toss the pet a candy/B-TREAT_TYPE",
+    "let my pet have a chewy/B-TREAT_TYPE stick/I-TREAT_TYPE",
+    "give the pet something yummy",
+    "treat my pet",
+    "hand it a cracker/B-TREAT_TYPE",
+    "give the pet a fish/B-TREAT_TYPE stick/I-TREAT_TYPE",
+    "reward it with a cookie/B-TREAT_TYPE",
+    "give the pet a small snack",
+    "let the pet have a yogurt/B-TREAT_TYPE drop/I-TREAT_TYPE",
+    "my pet wants a treat give it one",
+    "give it a bacon/B-TREAT_TYPE strip/I-TREAT_TYPE",
 ]
 
 check_status_examples = [
-    # TODO (Task 6): ~20 sentences, no slots
-    # "how is my pet doing"
+    # Task 6
+    "how is my pet doing",
+    "check on the pet",
+    "what's the pet's mood",
+    "how's my pet",
+    "is the pet okay",
+    "what is the pet's status",
+    "tell me how the pet is feeling",
+    "how is it doing",
+    "check the pet's health",
+    "is the pet happy",
+    "what are the pet's stats",
+    "give me a status update on the pet",
+    "how's it going with the pet",
+    "is my pet hungry",
+    "check how my pet is",
+    "show me the pet's condition",
+    "is the pet doing alright",
+    "tell me about the pet's current state",
+    "how is the pet feeling right now",
+    "what's up with the pet",
 ]
 
 rename_pet_examples = [
-    # TODO (Task 6): ~20 sentences with NAME slot
-    # "name the pet Mochi/B-NAME"
+    # Task 6
+    "name the pet Mochi/B-NAME",
+    "rename my pet to Sir/B-NAME Fluffington/I-NAME",
+    "call the pet Luna/B-NAME",
+    "change the pet's name to Buddy/B-NAME",
+    "I want to name my pet Coco/B-NAME",
+    "rename it to Whiskers/B-NAME",
+    "let's call the pet Neko/B-NAME",
+    "set the pet's name to Biscuit/B-NAME",
+    "name it Charlie/B-NAME",
+    "can you rename the pet to Princess/B-NAME Peach/I-NAME",
+    "I want to call it Snowball/B-NAME",
+    "change its name to Max/B-NAME",
+    "the pet should be called Daisy/B-NAME",
+    "rename the pet Oreo/B-NAME",
+    "name my pet Mr/B-NAME Whiskers/I-NAME",
+    "call it Tofu/B-NAME",
+    "let's name the pet Simba/B-NAME",
+    "rename it Captain/B-NAME Fuzzy/I-NAME Pants/I-NAME",
+    "I want to name it Pepper/B-NAME",
+    "set its name to Nugget/B-NAME",
 ]
 
 # ===========================================================================
