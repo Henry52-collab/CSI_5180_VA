@@ -110,8 +110,27 @@ oos_examples = [
     "find the nearest gas station",
     "open the camera",
     "how many miles is a kilometer",
-    # TODO (Task 3): Add ~20 more OOS examples relevant to our VA domain
-    # e.g., things that sound movie/pet-related but are out of scope
+    # Supplemented by abo
+    "bake me bread",
+    "can you recommend a good restaurant nearby",
+    "how do I reset my password",
+    "what's the latest news in politics",
+    "play some relaxing music for me",
+    "how long does it take to fly to Tokyo",
+    "what's the best programming language to learn",
+    "can you set a reminder for 8am",
+    "translate hello into French",
+    "what are some good books to read",
+    "how do I make pasta carbonara",
+    "who won the last World Cup",
+    "what's the capital of Australia",
+    "can you help me write an email",
+    "how many calories are in an apple",
+    "what's the best way to learn guitar",
+    "find me a good podcast about history",
+    "how do I cancel my subscription",
+    "what are some fun things to do in Berlin",
+    "can you tell me a joke",
 ]
 
 # Adapted from Activity 2: removed /B-NAME tags (project timer has no name slot)
@@ -185,49 +204,262 @@ weather_examples = [
 ]
 
 # ===========================================================================
-# MOVIE INTENTS (NEW — to be filled by Tasks 1, 2, 3)
+# MOVIE INTENTS (contributed by abo — Tasks 1, 2, 3)
 # ===========================================================================
 
 get_movie_cast_examples = [
-    # TODO (Task 1): ~30 sentences with TITLE slot
-    # "who is in Inception/B-TITLE"
-    # "tell me the cast of The/B-TITLE Dark/I-TITLE Knight/I-TITLE"
+    # Contributed by abo
+    "who are the actors in Inception/B-TITLE",
+    "who is in The/B-TITLE Dark/I-TITLE Knight/I-TITLE",
+    "can you tell me the cast of Titanic/B-TITLE",
+    "give me the actors in Pulp/B-TITLE Fiction/I-TITLE",
+    "who starred in The/B-TITLE Godfather/I-TITLE",
+    "tell me the cast of Interstellar/B-TITLE",
+    "list the actors in Parasite/B-TITLE",
+    "who acted in Schindler's/B-TITLE List/I-TITLE",
+    "what actors are in Fight/B-TITLE Club/I-TITLE",
+    "show me the cast of Forrest/B-TITLE Gump/I-TITLE",
+    "who plays in The/B-TITLE Matrix/I-TITLE",
+    "can you list the cast of Gladiator/B-TITLE",
+    "tell me who's in The/B-TITLE Shawshank/I-TITLE Redemption/I-TITLE",
+    "who are the stars of Whiplash/B-TITLE",
+    "which actors appeared in Joker/B-TITLE",
+    "give me the actors from Jaws/B-TITLE",
+    "who's in the movie Alien/B-TITLE",
+    "what is the cast of The/B-TITLE Prestige/I-TITLE",
+    "tell me who starred in Memento/B-TITLE",
+    "list the cast for Se7en/B-TITLE",
+    "who played in No/B-TITLE Country/I-TITLE for/I-TITLE Old/I-TITLE Men/I-TITLE",
+    "show me who acts in Arrival/B-TITLE",
+    "what actors star in The/B-TITLE Departed/I-TITLE",
+    "can you show me the cast of Dunkirk/B-TITLE",
+    "who features in Mad/B-TITLE Max/I-TITLE Fury/I-TITLE Road/I-TITLE",
+    "tell me the actors of Goodfellas/B-TITLE",
+    "who are in the film Zodiac/B-TITLE",
+    "who played in There/B-TITLE Will/I-TITLE Be/I-TITLE Blood/I-TITLE",
+    "give me the cast of Blade/B-TITLE Runner/I-TITLE 2049/I-TITLE",
+    "who are the stars in Everything/B-TITLE Everywhere/I-TITLE All/I-TITLE at/I-TITLE Once/I-TITLE",
 ]
 
 get_similar_movies_examples = [
-    # TODO (Task 1): ~30 sentences with TITLE slot
-    # "recommend something like The/B-TITLE Matrix/I-TITLE"
+    # Contributed by abo
+    "recommend me something like The/B-TITLE Shining/I-TITLE",
+    "what's a movie similar to 2001/B-TITLE A/I-TITLE Space/I-TITLE Odyssey/I-TITLE",
+    "suggest a film like Apocalypse/B-TITLE Now/I-TITLE",
+    "what should I watch if I liked Casablanca/B-TITLE",
+    "find me something like Rear/B-TITLE Window/I-TITLE",
+    "what are movies similar to Psycho/B-TITLE",
+    "give me films like Vertigo/B-TITLE",
+    "I liked Taxi/B-TITLE Driver/I-TITLE what else should I watch",
+    "suggest movies like A/B-TITLE Clockwork/I-TITLE Orange/I-TITLE",
+    "what else can I watch if I enjoyed Barry/B-TITLE Lyndon/I-TITLE",
+    "recommend a film similar to Chinatown/B-TITLE",
+    "what's something like Amadeus/B-TITLE",
+    "give me recommendations based on Fargo/B-TITLE",
+    "I enjoyed Silence/B-TITLE of/I-TITLE the/I-TITLE Lambs/I-TITLE what do you suggest",
+    "movies like Goodfellas/B-TITLE",
+    "find films related to Mulholland/B-TITLE Drive/I-TITLE",
+    "what should I watch after seeing Zodiac/B-TITLE",
+    "suggest something similar to The/B-TITLE Thing/I-TITLE",
+    "what's a good movie like Alien/B-TITLE",
+    "recommend films like The/B-TITLE Big/I-TITLE Lebowski/I-TITLE",
+    "show me movies similar to Eternal/B-TITLE Sunshine/I-TITLE of/I-TITLE the/I-TITLE Spotless/I-TITLE Mind/I-TITLE",
+    "what would I like if I loved Birdman/B-TITLE",
+    "find something similar to Lost/B-TITLE in/I-TITLE Translation/I-TITLE",
+    "I want a movie like No/B-TITLE Country/I-TITLE for/I-TITLE Old/I-TITLE Men/I-TITLE",
+    "suggest a movie similar to Manchester/B-TITLE by/I-TITLE the/I-TITLE Sea/I-TITLE",
+    "give me a recommendation based on Her/B-TITLE",
+    "what movies are like Moonlight/B-TITLE",
+    "what movies are like Cast/B-TITLE Away/I-TITLE",
+    "suggest a film similar to Heat/B-TITLE",
+    "what should I watch if I enjoyed Spirited/B-TITLE Away/I-TITLE",
 ]
 
 get_movie_plot_examples = [
-    # TODO (Task 1): ~30 sentences with TITLE slot
-    # "what is Inception/B-TITLE about"
+    # Contributed by abo
+    "what is the plot of Chinatown/B-TITLE",
+    "can you explain the story of Citizen/B-TITLE Kane/I-TITLE",
+    "what happens in Braveheart/B-TITLE",
+    "tell me what Mulholland/B-TITLE Drive/I-TITLE is about",
+    "give me a summary of The/B-TITLE Sixth/I-TITLE Sense/I-TITLE",
+    "what's the storyline of Memento/B-TITLE",
+    "describe the plot of The/B-TITLE Departed/I-TITLE",
+    "explain the story of Pan's/B-TITLE Labyrinth/I-TITLE",
+    "what is The/B-TITLE Truman/I-TITLE Show/I-TITLE about",
+    "summarize the movie Requiem/B-TITLE for/I-TITLE a/I-TITLE Dream/I-TITLE",
+    "give me the plot of Trainspotting/B-TITLE",
+    "what's the movie Oldboy/B-TITLE about",
+    "can you describe what happens in Se7en/B-TITLE",
+    "tell me the story of A/B-TITLE Beautiful/I-TITLE Mind/I-TITLE",
+    "what is the plot of Good/B-TITLE Will/I-TITLE Hunting/I-TITLE",
+    "what happens in The/B-TITLE Pianist/I-TITLE",
+    "explain the storyline of American/B-TITLE History/I-TITLE X/I-TITLE",
+    "summarize Donnie/B-TITLE Darko/I-TITLE",
+    "give me a summary of 12/B-TITLE Angry/I-TITLE Men/I-TITLE",
+    "what is Prisoners/B-TITLE about",
+    "what's the story of Blue/B-TITLE Velvet/I-TITLE",
+    "can you tell me the plot of Magnolia/B-TITLE",
+    "what's going on in The/B-TITLE Lighthouse/I-TITLE",
+    "describe the movie Whiplash/B-TITLE",
+    "what happens in Drive/B-TITLE",
+    "tell me about the plot of Sicario/B-TITLE",
+    "what is the story behind Spotlight/B-TITLE",
+    "can you describe the story of Arrival/B-TITLE",
+    "what is the plot of Nightcrawler/B-TITLE",
+    "tell me what The/B-TITLE Favourite/I-TITLE is about",
 ]
 
 get_movies_by_genre_examples = [
-    # TODO (Task 2): ~30 sentences with GENRE slot
-    # "show me action/B-GENRE movies"
-    # "I want to watch a science/B-GENRE fiction/I-GENRE film"
+    # Contributed by abo (German genre names replaced with English equivalents)
+    "show me some good horror/B-GENRE movies",
+    "what are the best thriller/B-GENRE films",
+    "recommend me a science/B-GENRE fiction/I-GENRE movie",
+    "i want to watch something action/B-GENRE tonight",
+    "what are some classic western/B-GENRE films",
+    "give me a list of good documentary/B-GENRE movies",
+    "suggest a fantasy/B-GENRE film for the weekend",
+    "what are the top rated drama/B-GENRE movies",
+    "i feel like watching an adventure/B-GENRE film",
+    "can you recommend a mystery/B-GENRE movie",
+    "what are some must-watch animation/B-GENRE films",
+    "looking for a good music/B-GENRE movie",
+    "what are the best history/B-GENRE films out there",
+    "suggest some good war/B-GENRE movies",
+    "i want to watch a crime/B-GENRE film",
+    "what are some highly rated family/B-GENRE films",
+    "give me recommendations for romance/B-GENRE movies",
+    "what are the best comedy/B-GENRE films",
+    "can you suggest a TV/B-GENRE movie",
+    "i'm in the mood for a sci-fi/B-GENRE film",
+    "what are some good slasher/B-GENRE movies",
+    "recommend me a romantic/B-GENRE comedy/I-GENRE",
+    "what are the top feel-good/B-GENRE films",
+    "i want something in the superhero/B-GENRE genre",
+    "can you list some popular dark/B-GENRE comedy/I-GENRE movies",
+    "what are good tearjerker/B-GENRE films to watch",
+    "suggest me some action/B-GENRE adventure/I-GENRE movies",
+    "what are the best buddy/B-GENRE cop/I-GENRE films",
+    "i'm looking for a good coming/B-GENRE of/I-GENRE age/I-GENRE movie",
+    "can you recommend some psychological/B-GENRE thriller/I-GENRE movies",
 ]
 
 get_movie_rating_examples = [
-    # TODO (Task 2): ~25 sentences with TITLE slot
-    # "what is the rating of Inception/B-TITLE"
+    # Contributed by abo
+    "what do people think about Whiplash/B-TITLE",
+    "what's the rating of The/B-TITLE Godfather/I-TITLE Part/I-TITLE II/I-TITLE",
+    "how well received was Schindler's/B-TITLE List/I-TITLE",
+    "is Parasite/B-TITLE a well rated movie",
+    "what score does Apocalypse/B-TITLE Now/I-TITLE have",
+    "how's the rating of Inception/B-TITLE",
+    "is Joker/B-TITLE highly rated",
+    "tell me the rating of The/B-TITLE Dark/I-TITLE Knight/I-TITLE",
+    "how good is Fight/B-TITLE Club/I-TITLE rated",
+    "what's the score for The/B-TITLE Matrix/I-TITLE",
+    "is Gladiator/B-TITLE worth watching based on ratings",
+    "how do critics rate Interstellar/B-TITLE",
+    "what's the audience score for Forrest/B-TITLE Gump/I-TITLE",
+    "is The/B-TITLE Shawshank/I-TITLE Redemption/I-TITLE highly rated",
+    "how is Pulp/B-TITLE Fiction/I-TITLE rated",
+    "tell me the rating for No/B-TITLE Country/I-TITLE for/I-TITLE Old/I-TITLE Men/I-TITLE",
+    "what's the score of There/B-TITLE Will/I-TITLE Be/I-TITLE Blood/I-TITLE",
+    "how well was The/B-TITLE Departed/I-TITLE received",
+    "is Dunkirk/B-TITLE a good movie based on ratings",
+    "what's the review score for Goodfellas/B-TITLE",
+    "how did Blade/B-TITLE Runner/I-TITLE 2049/I-TITLE do with critics",
+    "is Se7en/B-TITLE well rated",
+    "what do viewers think of Memento/B-TITLE",
+    "how did Arrival/B-TITLE score with audiences",
+    "is Mad/B-TITLE Max/I-TITLE Fury/I-TITLE Road/I-TITLE well reviewed",
+    "how are the reviews for The/B-TITLE Prestige/I-TITLE",
+    "what rating does Zodiac/B-TITLE have",
+    "what's the audience reception of Prisoners/B-TITLE",
+    "how well did Zodiac/B-TITLE score with critics",
+    "what do people think of The/B-TITLE Grand/I-TITLE Budapest/I-TITLE Hotel/I-TITLE",
 ]
 
 get_movie_director_examples = [
-    # TODO (Task 2): ~25 sentences with TITLE slot
-    # "who directed The/B-TITLE Dark/I-TITLE Knight/I-TITLE"
+    # Contributed by abo
+    "who directed Jurassic/B-TITLE Park/I-TITLE",
+    "who is the director of Vertigo/B-TITLE",
+    "can you tell me who made Ran/B-TITLE",
+    "who was behind the camera for 1917/B-TITLE",
+    "tell me the director of Boogie/B-TITLE Nights/I-TITLE",
+    "who's the filmmaker behind Moonlight/B-TITLE",
+    "who created the film Her/B-TITLE",
+    "which director made The/B-TITLE Revenant/I-TITLE",
+    "who directed Get/B-TITLE Out/I-TITLE",
+    "tell me who directed Inside/B-TITLE Out/I-TITLE",
+    "who was the director of The/B-TITLE Social/I-TITLE Network/I-TITLE",
+    "who's behind Midsommar/B-TITLE",
+    "who directed La/B-TITLE La/I-TITLE Land/I-TITLE",
+    "can you tell me who directed 12/B-TITLE Years/I-TITLE a/I-TITLE Slave/I-TITLE",
+    "who made The/B-TITLE Shape/I-TITLE of/I-TITLE Water/I-TITLE",
+    "which director is behind Hereditary/B-TITLE",
+    "who directed Once/B-TITLE Upon/I-TITLE a/I-TITLE Time/I-TITLE in/I-TITLE Hollywood/I-TITLE",
+    "tell me the director of Uncut/B-TITLE Gems/I-TITLE",
+    "who was the director of Minari/B-TITLE",
+    "who directed Sound/B-TITLE of/I-TITLE Metal/I-TITLE",
+    "can you tell me the director of Nomadland/B-TITLE",
+    "who made The/B-TITLE Power/I-TITLE of/I-TITLE the/I-TITLE Dog/I-TITLE",
+    "who is the director of Promising/B-TITLE Young/I-TITLE Woman/I-TITLE",
+    "tell me who directed Tenet/B-TITLE",
+    "who directed Dune/B-TITLE",
+    "who's the director of Pig/B-TITLE",
+    "who made The/B-TITLE Batman/I-TITLE",
+    "who made Ikiru/B-TITLE",
+    "tell me the director of Melancholia/B-TITLE",
+    "who directed The/B-TITLE White/I-TITLE Ribbon/I-TITLE",
 ]
 
 get_trending_movies_examples = [
-    # TODO (Task 3): ~25 sentences with TIME_WINDOW slot
-    # "what movies are trending this/B-TIME_WINDOW week/I-TIME_WINDOW"
+    # Contributed by abo
+    "what's trending this week/B-TIME_WINDOW",
+    "show me the most popular movies today/B-TIME_WINDOW",
+    "what films are trending this day/B-TIME_WINDOW",
+    "give me the top trending movies of the week/B-TIME_WINDOW",
+    "what's hot in movies this week/B-TIME_WINDOW",
+    "show me what's trending today/B-TIME_WINDOW",
+    "what are the most watched movies this week/B-TIME_WINDOW",
+    "give me trending films for this day/B-TIME_WINDOW",
+    "what movies are popular this week/B-TIME_WINDOW",
+    "what's everyone watching this day/B-TIME_WINDOW",
+    "show me this week's/B-TIME_WINDOW trending movies",
+    "what are today's/B-TIME_WINDOW most popular films",
+    "tell me the trending movies for this week/B-TIME_WINDOW",
+    "what films are buzzing this day/B-TIME_WINDOW",
+    "can you show me what's trending this week/B-TIME_WINDOW",
+    "what movies are people watching this week/B-TIME_WINDOW",
+    "list the most popular films of today/B-TIME_WINDOW",
+    "what's trending right now this week/B-TIME_WINDOW",
+    "give me the hottest movies this month/B-TIME_WINDOW",
+    "what are the trending films this year/B-TIME_WINDOW",
+    "show me popular movies from this weekend/B-TIME_WINDOW",
+    "what's been trending lately/B-TIME_WINDOW",
+    "what are the most popular movies right now/B-TIME_WINDOW",
 ]
 
 get_upcoming_movies_examples = [
-    # TODO (Task 3): ~20 sentences, no slots
-    # "what new movies are coming out"
+    # Contributed by abo
+    "what movies are coming out soon",
+    "show me upcoming films",
+    "what's releasing in cinemas soon",
+    "give me a list of movies coming out",
+    "what films are scheduled for release",
+    "tell me about upcoming movies",
+    "what's coming to theaters soon",
+    "are there any new movies releasing soon",
+    "show me what films are coming out next",
+    "what are the next movies to be released",
+    "give me the latest upcoming film releases",
+    "what movies should I look forward to",
+    "tell me what's hitting theaters soon",
+    "what new films are on the way",
+    "show me movies that are about to come out",
+    "what are the most anticipated upcoming movies",
+    "give me a preview of upcoming cinema releases",
+    "what films are expected to release soon",
+    "tell me about movies that are coming soon",
+    "what's scheduled to hit theaters",
 ]
 
 # ===========================================================================

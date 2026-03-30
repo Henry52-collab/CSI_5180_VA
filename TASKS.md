@@ -28,47 +28,29 @@ These 5 intents were adapted from Activity 2 and are **already filled in** `trai
 |--------|-------|--------|
 | `greetings` | 30 | Done — copied as-is |
 | `goodbye` | 30 | Done — copied as-is |
-| `oos` | 30 | Done — but needs ~20 more (see Task 3) |
+| `oos` | 50 | Done — Activity 2 (30) + abo supplement (20) |
 | `set_timer` | 30 | Done — `/B-NAME` tags removed |
 | `weather` | 32 | Done — `/B-DAY` `/I-DAY` tags removed |
 
 No task needed for these — just review them if you want.
 
-### Task 1: [ ] Movie intents — batch A
+### Task 1: [x] Movie intents — batch A (done by abo)
 
-Write training sentences for these 3 intents (~90 sentences total):
+~~Write training sentences for get_movie_cast, get_similar_movies, get_movie_plot (30 each).~~
 
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `get_movie_cast` | TITLE | 30 | `"who is in Inception/B-TITLE"` |
-| `get_similar_movies` | TITLE | 30 | `"recommend something like The/B-TITLE Matrix/I-TITLE"` |
-| `get_movie_plot` | TITLE | 30 | `"what is Inception/B-TITLE about"` |
+Completed: 90 sentences integrated into `training_data.py`.
 
-**Tip:** Use diverse movie titles (1-word: "Frozen", 2-word: "Iron Man", 3-word: "The Dark Knight") to train multi-token slot recognition.
+### Task 2: [x] Movie intents — batch B (done by abo)
 
-### Task 2: [ ] Movie intents — batch B
+~~Write training sentences for get_movies_by_genre, get_movie_rating, get_movie_director (25-30 each).~~
 
-Write training sentences for these 3 intents (~80 sentences total):
+Completed: 90 sentences integrated into `training_data.py`. German genre names replaced with English equivalents.
 
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `get_movies_by_genre` | GENRE | 30 | `"show me action/B-GENRE movies"` |
-| `get_movie_rating` | TITLE | 25 | `"what is the rating of Inception/B-TITLE"` |
-| `get_movie_director` | TITLE | 25 | `"who directed The/B-TITLE Dark/I-TITLE Knight/I-TITLE"` |
+### Task 3: [x] Movie intents — batch C + OOS supplement (done by abo)
 
-**Genre values to cover:** action, comedy, horror, drama, romance, thriller, animation, science fiction, adventure, fantasy, documentary, mystery, crime
+~~Write training sentences for get_trending_movies, get_upcoming_movies, supplement OOS.~~
 
-### Task 3: [ ] Movie intents — batch C + basic intents cleanup
-
-Write training sentences + clean up reusable data (~65 new sentences):
-
-| Intent | Slot | Target | Example |
-|--------|------|--------|---------|
-| `get_trending_movies` | TIME_WINDOW | 25 | `"what movies are trending this/B-TIME_WINDOW week/I-TIME_WINDOW"` |
-| `get_upcoming_movies` | (none) | 20 | `"what new movies are coming out"` |
-| supplement `oos` | (none) | +20 | `"order me a pizza"`, `"play some jazz music"` |
-
-The OOS supplement should add examples that sound like they *could* be movie/pet requests but aren't covered intents (e.g., "who won best picture last year", "can my pet learn tricks").
+Completed: 23 + 20 + 20 = 63 sentences integrated into `training_data.py`.
 
 ### Task 4: [ ] Pet intents — batch A
 
