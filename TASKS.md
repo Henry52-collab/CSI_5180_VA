@@ -52,7 +52,7 @@ Completed: 90 sentences integrated into `training_data.py`. German genre names r
 
 Completed: 23 + 20 + 20 = 63 sentences integrated into `training_data.py`.
 
-### Task 4: [ ] Pet intents — batch A(Henry)
+### Task 4: [ ] Pet intents — batch A(Frank)
 
 Write training sentences for these 3 intents (~70 sentences total):
 
@@ -64,7 +64,7 @@ Write training sentences for these 3 intents (~70 sentences total):
 
 **Remember:** Include sentences both with and without the optional slot (e.g., "feed the pet" with no food_type is valid).
 
-### Task 5: [ ] Pet intents — batch B(Henry)
+### Task 5: [ ] Pet intents — batch B(Frank)
 
 Write training sentences for these 3 intents (~60 sentences total):
 
@@ -74,7 +74,7 @@ Write training sentences for these 3 intents (~60 sentences total):
 | `put_to_sleep` | DURATION | 20 | `"put the pet to sleep for 2/B-DURATION hours/I-DURATION"` |
 | `wake_up_pet` | (none) | 20 | `"wake the pet up"` |
 
-### Task 6: [ ] Pet intents — batch C(Henry)
+### Task 6: [ ] Pet intents — batch C(Frank)
 
 Write training sentences for these 3 intents (~60 sentences total):
 
