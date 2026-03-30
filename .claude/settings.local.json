@@ -1,0 +1,12 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(python3:*)",
+      "Bash(grep -i \"data\\\\|audio\\\\|speaker\\\\|voice\\\\|wav\\\\|path\" /d/CSI_5180_VA/Examples/WakeWord*.ipynb)",
+      "Bash(grep:*)",
+      "Bash(python training/test_verification.py)",
+      "Bash(pip install:*)",
+      "Bash(where python:*)"
+    ]
+  }
+}
