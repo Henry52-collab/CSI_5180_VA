@@ -88,7 +88,7 @@ Write training sentences for these 3 intents (~60 sentences total):
 
 ## Phase 2: ML Modules (can start once you have Activity code)
 
-### Task 7: [ ] User Verification module
+### Task 7: [ ] User Verification module(Henry)
 
 Build the speaker verification module (Module 1).
 
@@ -103,7 +103,7 @@ Build the speaker verification module (Module 1).
 - `pipeline/user_verification.py` — module with `process(audio)` and `bypass(code)`
 - `training/train_verification.py` — training script
 
-### Task 8: [ ] Wake Word Detection module
+### Task 8: [ ] Wake Word Detection module(Henry)
 
 Build the wake word detection module (Module 2).
 
