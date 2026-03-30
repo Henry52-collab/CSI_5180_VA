@@ -467,10 +467,31 @@ get_upcoming_movies_examples = [
 # ===========================================================================
 
 feed_pet_examples = [
-    # TODO (Task 4): ~25 sentences with optional FOOD_TYPE slot
-    # "feed the pet some fish/B-FOOD_TYPE"
-    # "feed the pet"  (no slot is valid)
-]
+        "feed the pet some fish/B-FOOD_TYPE",
+      "give the pet chicken/B-FOOD_TYPE",
+      "feed my pet some kibble/B-FOOD_TYPE",
+      "give food to the pet",
+      "feed the cat",
+      "can you feed the pet tuna/B-FOOD_TYPE",
+      "I want to feed my pet some beef/B-FOOD_TYPE",
+      "please give the pet a snack/B-FOOD_TYPE",
+      "feed the pet",
+      "time to feed the pet some salmon/B-FOOD_TYPE",
+      "give my pet some dry/B-FOOD_TYPE food/I-FOOD_TYPE",
+      "I need to feed the cat",
+      "the pet is hungry feed it",
+      "feed the pet some wet/B-FOOD_TYPE food/I-FOOD_TYPE",
+      "can you give the pet milk/B-FOOD_TYPE",
+      "please feed my pet",
+      "let me feed the pet some rice/B-FOOD_TYPE",
+      "give the pet something to eat",
+      "feed my cat some turkey/B-FOOD_TYPE",
+      "I would like to feed the pet shrimp/B-FOOD_TYPE",
+      "go ahead and feed the pet",
+      "the cat needs food",
+      "serve the pet some lamb/B-FOOD_TYPE",
+      "it is meal time for the pet",
+      "feed the pet some vegetables/B-FOOD_TYPE",]
 
 play_with_pet_examples = [
     # TODO (Task 4): ~25 sentences with optional TOY slot
