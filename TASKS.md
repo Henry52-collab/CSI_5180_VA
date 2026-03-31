@@ -181,7 +181,7 @@ Build the answer generation module (Module 6) with BOTH approaches.
 
 ## Phase 4: Integration
 
-### Task 13: [ ] Pipeline orchestrator + state machine
+### Task 13: [Fengshou Xu ] Pipeline orchestrator + state machine
 
 Wire all 7 modules into a sequential pipeline.
 
