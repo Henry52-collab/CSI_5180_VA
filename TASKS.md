@@ -144,7 +144,7 @@ Fine-tune DistilBERT for joint intent classification + slot filling. **Depends o
 - `models/intent_bert/label_maps.json` — `{"intent_labels": [...], "slot_labels": [...]}`
 - `pipeline/intent_detection.py` — module with `process(text)` returning `{"intent": str, "slots": dict}`
 
-### Task 11: [ ] Fulfillment module
+### Task 11: [Laura] Fulfillment module
 
 Build the fulfillment module (Module 5).
 
