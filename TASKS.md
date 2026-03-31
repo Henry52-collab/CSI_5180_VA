@@ -34,19 +34,19 @@ These 5 intents were adapted from Activity 2 and are **already filled in** `trai
 
 No task needed for these — just review them if you want.
 
-### Task 1: [x] Movie intents — batch A (done by abo)
+### Task 1: [x] Movie intents — batch A (done by Laura)
 
 ~~Write training sentences for get_movie_cast, get_similar_movies, get_movie_plot (30 each).~~
 
 Completed: 90 sentences integrated into `training_data.py`.
 
-### Task 2: [x] Movie intents — batch B (done by abo)
+### Task 2: [x] Movie intents — batch B (done by Laura)
 
 ~~Write training sentences for get_movies_by_genre, get_movie_rating, get_movie_director (25-30 each).~~
 
 Completed: 90 sentences integrated into `training_data.py`. German genre names replaced with English equivalents.
 
-### Task 3: [x] Movie intents — batch C + OOS supplement (done by abo)
+### Task 3: [x] Movie intents — batch C + OOS supplement (done by Laura)
 
 ~~Write training sentences for get_trending_movies, get_upcoming_movies, supplement OOS.~~
 
@@ -104,7 +104,7 @@ Build the wake word detection module (Module 2).
 - `training/train_wake_word.py` — training script (if retraining)
 - `models/wake_word_cnn.pth` — model weights
 
-### Task 9: [ ] ASR + TTS modules
+### Task 9: [Laura] ASR + TTS modules
 
 Build the ASR module (Module 3) and TTS module (Module 7). Both are out-of-the-box.
 
