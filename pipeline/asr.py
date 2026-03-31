@@ -16,6 +16,7 @@ class ASRModule():
             )["text"]
         except:
             print("Something went wrong")
+            transcribed_text = None
 
         return transcribed_text
 
