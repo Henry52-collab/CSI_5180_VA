@@ -76,14 +76,14 @@ Completed: 20 + 20 + 20 = 60 sentences integrated into `training_data.py`.
 
 ### Task 7: [Henry] User Verification module
 
-Build the speaker verification module (Module 1).
+~~Build the speaker verification module (Module 1).~~
 
-- Extract MFCC features (20 coefficients) from audio using `librosa`
-- Train a binary SVM classifier (`sklearn`): authorized (team voices) vs unauthorized (other students)
-- Data augmentation: noise injection, pitch shifting, time stretching
-- Data source: Activity 1 voice recordings
-- Output: `models/user_verify_svm.pkl`
-- Bypass: passcode input
+~~- Extract MFCC features (20 coefficients) from audio using `librosa`~~
+~~- Train a binary SVM classifier (`sklearn`): authorized (team voices) vs unauthorized (other students)~~
+~~- Data augmentation: noise injection, pitch shifting, time stretching~~
+~~- Data source: Activity 1 voice recordings~~
+~~- Output: `models/user_verify_svm.pkl`~~
+~~- Bypass: passcode input~~
 
 **Deliverables:**
 - `pipeline/user_verification.py` — module with `process(audio)` and `bypass(code)`
