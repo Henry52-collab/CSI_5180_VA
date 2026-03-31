@@ -6,7 +6,8 @@
       "Bash(grep:*)",
       "Bash(python training/test_verification.py)",
       "Bash(pip install:*)",
-      "Bash(where python:*)"
+      "Bash(where python:*)",
+      "Bash(python:*)"
     ]
   }
 }
