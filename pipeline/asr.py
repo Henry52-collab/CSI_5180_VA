@@ -1,20 +1,25 @@
 import whisper
 
+class ASRModule():
+    def __init__(self):
+        self.asr_model = whisper.load_model("base")
 
-def process(audio_path):
 
-    asr_model = whisper.load_model("base")
-    try:
-        transcribed_text = asr_model.transcribe(
-            audio_path,
-            langauge="en",
-            fp16=False,
-            verbose=False
-        )["text"]
-    except:
-        print("Something went wrong")
+    def process(self, audio_path):
 
-    return transcribed_text
+        try:
+            transcribed_text = self.asr_model.transcribe(
+                audio_path,
+                langauge="en",
+                fp16=False,
+                verbose=False
+            )["text"]
+        except:
+            print("Something went wrong")
 
-def bypass(text):
-    return text # TEMPORARY
+        return transcribed_text
+
+    def bypass(self, text):
+        if text.lower() == "yes":
+            return None, False
+        return text, True

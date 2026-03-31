@@ -1,16 +1,17 @@
-import edge_tts
+import pyttsx3
 from playsound3 import playsound
 import asyncio
 
 # THIS FUNCTION IN GENERAL IS A PLACEHOLDER - needs the emotion process stuff
-async def generate_tts(text, voice="en-US-JennyNeural"):
-    output_file = "output.mp3" # PLACEHOLDER
 
-    communicate = edge_tts.Communicate(text, voice)
-    await communicate.save(output_file)
 
-    return output_file
+class TTSModule():
+    def __init__(self):
+        self.engine = pyttsx3.init()
+        rate = self.engine.getProperty('rate')
+        self.engine.setProperty('rate', 125)
+    def process(self, text):
+        self.engine.say(text)
+        self.engine.runAndWait()
+    
 
-def process(text):
-    audio_file = asyncio.run(generate_tts(text))
-    playsound("output.mp3") # PLACEHOLDER

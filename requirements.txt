@@ -11,5 +11,4 @@ sounddevice
 soundfile
 numpy
 openai-whisper
-edge-tts
-playsound3
+pyttsx3
