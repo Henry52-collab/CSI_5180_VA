@@ -3,6 +3,7 @@ import os
 import requests
 import json
 import pprint
+from pytimeparse import parse
 
 from utils.weather import WeatherAPIModule
 from utils.movie import MovieAPIModule
@@ -24,9 +25,15 @@ class FulfillmentModule():
             self.process_weather(intent_data)
         if "timer" in intent_data["intent"].lower():
             self.process_timer(intent_data)
-        
+
     def process_timer(self, intent_data):
-        return
+        duration = intent_data["slots"]["duration"]
+        seconds = -1
+        try:
+            seconds = parse(duration)
+        except:
+            pass
+        return seconds
     
     
     def process_weather(self, intent_data):
@@ -72,30 +79,35 @@ class FulfillmentModule():
 
             result = self.movie_api.get_movie_details(movie_title)
 
-            overview = result['overview']
-            ratings = result['vote_average']
-            cast = [actor['original_name'] for actor in result['credits']['cast']][:5]
-            director = [crew['original_name'] for crew in result['credits']['crew'] if crew['job'] == 'Director'][:5]
-            recommendations = [movie['original_title'] for movie in result['recommendations']['results']][:5]
+            return result
 
-            print(overview)
+            # overview = result['overview']
+            # ratings = result['vote_average']
+            # cast = [actor['original_name'] for actor in result['credits']['cast']][:5]
+            # director = [crew['original_name'] for crew in result['credits']['crew'] if crew['job'] == 'Director'][:5]
+            # recommendations = [movie['original_title'] for movie in result['recommendations']['results']][:5]
+
+            # print(overview)
 
         # Stuff by genre
         if genre:
 
             result = self.movie_api.find_movie(genre)
+            return result
 
-            movies = [movie['original_title'] for movie in result['results']][:5]
-            print(movies)
+            # movies = [movie['original_title'] for movie in result['results']][:5]
+            # print(movies)
 
         # Stuff by tiem window
         if time_window:
             result = self.movie_api.get_trending_movie(time_window)
 
+            return result
 
-            movies = [movie['original_title'] for movie in result['results']][:5]
 
-            print(movies)
+            # movies = [movie['original_title'] for movie in result['results']][:5]
+
+            # print(movies)
 
 
 # fulfillment = FulfillmentModule()

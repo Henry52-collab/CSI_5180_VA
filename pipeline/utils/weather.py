@@ -47,6 +47,6 @@ class WeatherAPIModule():
             return None
         result = response.json()
 
-        return result["weather"][0]["description"]
+        return result["weather"][0]
 
 
