@@ -128,7 +128,7 @@ Build the ASR module (Module 3) and TTS module (Module 7). Both are out-of-the-b
 
 ## Phase 3: Core Logic (can partially overlap with Phase 2)
 
-### Task 10: [ ] Intent Detection — BERT training
+### Task 10: [ Fengshou Xu] Intent Detection — BERT training
 
 Fine-tune DistilBERT for joint intent classification + slot filling. **Depends on:** Tasks 1-6 (training data).
 
