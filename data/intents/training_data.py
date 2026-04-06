@@ -467,8 +467,6 @@ get_upcoming_movies_examples = [
 # ===========================================================================
 
 feed_pet_examples = [
-<<<<<<< HEAD
-=======
     # Contributions from Fengshou, Frank, and Claude
     "feed the pet",
     "feed the pet some fish/B-FOOD_TYPE",
@@ -505,7 +503,6 @@ feed_pet_examples = [
     "I would like to feed the pet shrimp/B-FOOD_TYPE",
     "serve the pet some lamb/B-FOOD_TYPE",
     "feed the pet some vegetables/B-FOOD_TYPE",
->>>>>>> 85a9badd979de90b1ca809fb255dc20483ccdf10
 ]
 
 play_with_pet_examples = [
