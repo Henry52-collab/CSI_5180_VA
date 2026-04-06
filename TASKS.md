@@ -158,7 +158,7 @@ Build the fulfillment module (Module 5).
 **Deliverables:**
 - `pipeline/fulfillment.py` — module with `process(intent_data)` and `bypass(json)`
 
-### Task 12: [ ] NLG module — template + LLM
+### Task 12: [ ] NLG module — template + LLM(Henry)
 
 Build the answer generation module (Module 6) with BOTH approaches.
 
