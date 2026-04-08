@@ -210,7 +210,7 @@ Build the web server that connects frontend to pipeline.
 - `requirements.txt`
 - `.env.example` — template for API keys
 
-### Task 15: [ ] Frontend UI
+### Task 15: [Fengshou Xu ] Frontend UI
 
 Build the web interface.
 
