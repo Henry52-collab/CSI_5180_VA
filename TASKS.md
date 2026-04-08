@@ -195,7 +195,7 @@ Wire all 7 modules into a sequential pipeline.
 - `pipeline/orchestrator.py`
 - `pipeline/__init__.py`
 
-### Task 14: [ ] Flask backend — API routes + audio
+### Task 14: [Laura] Flask backend — API routes + audio
 
 Build the web server that connects frontend to pipeline.
 
