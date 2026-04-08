@@ -38,15 +38,18 @@ class WeatherAPIModule():
         params["appid"] = self.OPENWEATHER_API_KEY
         params["lat"] = lat
         params["lon"] = lon
+        params["units"] = "metric"
         headers = {"accept": "application/json"}
         url = f"http://api.openweathermap.org/data/2.5/weather"
 
         response = requests.get(url, params=params, headers=headers)
 
+        print(response.json())
+
         if response.status_code != 200:
             return None
         result = response.json()
 
-        return result["weather"][0]
+        return result
 
 

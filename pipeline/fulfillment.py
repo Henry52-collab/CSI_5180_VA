@@ -29,11 +29,14 @@ class FulfillmentModule():
     def process_timer(self, intent_data):
         duration = intent_data["slots"]["duration"]
         seconds = -1
+        intent_response = {}
+        intent_response["type"] = "timer"
         try:
             seconds = parse(duration)
         except:
             pass
-        return seconds
+        intent_response["duration"] = seconds
+        return intent_response
     
     
     def process_weather(self, intent_data):
@@ -42,9 +45,21 @@ class FulfillmentModule():
 
         if "country" in intent_data["slots"]:
             country = intent_data["slots"]["country"]
+
         
-        return self.weather_api.get_weather(city, country) # TEMPORARY
-    
+        intent_response = {}
+        intent_response["type"] = "weather"
+        result = self.weather_api.get_weather(city, country)
+
+        if result is None:
+            return None # Error
+        
+        intent_response["description"] = result["weather"][0]["description"]
+        intent_response["current_temp"] = result["main"]["temp"]
+        intent_response["feels_like"] = result["main"]["feels_like"]
+
+        # intent_response["description"] = result["description"]
+        return intent_response
     def process_movies(self, intent_data):
         # get movie cast (title)
         # get similar movies (title)
@@ -59,6 +74,8 @@ class FulfillmentModule():
         movie_title = None
         genre = None
         time_window = None
+
+        intent_response = {}
 
         if "title" in slots:
             movie_title = slots["title"]
@@ -79,7 +96,8 @@ class FulfillmentModule():
 
             result = self.movie_api.get_movie_details(movie_title)
 
-            return result
+            if result is None:
+                return None 
 
             # overview = result['overview']
             # ratings = result['vote_average']
@@ -89,11 +107,25 @@ class FulfillmentModule():
 
             # print(overview)
 
+            intent_response["type"] = "movie_title"
+
+            intent_response["plot_overview"] = result["overview"]
+            intent_response["ratings"] = result["vote_average"]
+            intent_response["cast"] = [actor['original_name'] for actor in result['credits']['cast']][:5]
+            intent_response["director"] = [crew['original_name'] for crew in result['credits']['crew'] if crew['job'] == 'Director'][:5]
+            intent_response["recommendations"] = [movie['original_title'] for movie in result['recommendations']['results']][:5]
+
         # Stuff by genre
         if genre:
-
+            
             result = self.movie_api.find_movie(genre)
-            return result
+
+            if result is None:
+                return None 
+
+            intent_response["type"] = "movie_genre"
+
+            intent_response["movies"] = [movie['original_title'] for movie in result['results']][:5]
 
             # movies = [movie['original_title'] for movie in result['results']][:5]
             # print(movies)
@@ -102,16 +134,22 @@ class FulfillmentModule():
         if time_window:
             result = self.movie_api.get_trending_movie(time_window)
 
-            return result
+            if result is None:
+                return None
+
+            intent_response["type"] = "movie_time_window"
+            intent_response["movies"] = [movie['original_title'] for movie in result['results']][:5]
 
 
             # movies = [movie['original_title'] for movie in result['results']][:5]
 
             # print(movies)
+        return intent_response
 
 
 # fulfillment = FulfillmentModule()
 
-# fulfillment.process_movies({"intent": "blah", "slots": {"genre": "Action"}})
+# response = fulfillment.process_weather({"intent": "blah", "slots": {"city": "Beijing"}})
+# print(response)
 
 
