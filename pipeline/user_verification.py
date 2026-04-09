@@ -14,6 +14,10 @@ import pickle
 import numpy as np
 import librosa
 
+import soundfile
+
+import io
+
 # ---------------------------------------------------------------------------
 # Constants (must match training)
 # ---------------------------------------------------------------------------
@@ -92,8 +96,9 @@ def process(audio, sr=TARGET_SR):
         dict with "verified" (bool) and "confidence" (float 0-1).
     """
     # Accept file path or numpy array
-    if isinstance(audio, str):
+    if isinstance(audio, soundfile.SoundFile):
         audio, sr = librosa.load(audio, sr=TARGET_SR, mono=True)
+
 
     svm, scaler = _load_model()
     features = _extract_features(audio, sr)

@@ -9,9 +9,7 @@ import soundfile
 
 import librosa 
 
-cwd = os.getcwd()
-
-ALLOWED_EXTENSIONS = {'wav', 'webm'}
+ALLOWED_EXTENSIONS = {'wav', 'webm'} # TODO: Convert from webm to wav (is this needed?)
 
 app = Flask(__name__)
 
@@ -28,50 +26,73 @@ def is_valid_file(filename):
 
 @app.route("/api/verify", methods=["POST"])
 def verify_voice():
-    file = request.files['file']
+
     return_json = {}
     return_json["module"] = "verify"
+    return_json["success"] = False
+    return_json["data"] = {}
 
-    if file.filename == '':
-        return_json["success"] = False
-        return_json["data"] = {}
+    if "text" in request.form:
+        text = request.form.get("text")
 
-    if file and is_valid_file(file.filename):
+        if text == "yes": # TEMPORARY BYPASS - CHANGE THIS
+            system_state["unlocked"] = True
+            return_json["success"] = True
+            return_json["data"] = {"bypass": True}
 
-        audio = soundfile.SoundFile(io.BytesIO(file.read()))
+    elif "file" in request.files:
+        file = request.files['file']
 
-        result = process_verify(audio)
+        if file and is_valid_file(file.filename):
 
-        return_json["success"] = result["verified"]
-        system_state["unlocked"] = result["verified"]
-        return_json["module"] = "verify"
-        return_json["data"] = result
+            audio = soundfile.SoundFile(io.BytesIO(file.read()))
+
+            result = process_verify(audio)
+
+            return_json["success"] = result["verified"]
+            system_state["unlocked"] = result["verified"]
+            return_json["module"] = "verify"
+            return_json["data"] = result
 
     return return_json
 
         
 @app.route("/api/wake", methods=["POST"])
 def wake_detection():
-    file = request.files['file']
+
 
     return_json = {}
     return_json["module"] = "wake"
+    return_json["success"] = False
+    return_json["data"] = {}
 
-    if file.filename == '':
-        return_json["success"] = False
-        return_json["data"] = {}
-    if file and is_valid_file(file.filename):
+    if "text" in request.form:
+        text = request.form.get("text")
 
-        audio = soundfile.SoundFile(io.BytesIO(file.read()))
+        if text.lower() == "hey atlas": # TEMPORARY BYPASS - CHANGE THIS
+            system_state["unlocked"] = True
+            return_json["success"] = True
+            return_json["data"] = {"bypass": True}
 
-        result = process_wakeword(audio)
+    elif "file" in request.files:
+        file = request.files['file']
 
-        system_state["wake"] = result["detected"]
+        return_json = {}
+        return_json["module"] = "wake"
 
-        return_json["success"] = result["detected"]
-        return_json["data"] = result
+        if file and is_valid_file(file.filename):
+
+            audio = soundfile.SoundFile(io.BytesIO(file.read()))
+
+            result = process_wakeword(audio)
+
+            system_state["wake"] = result["detected"]
+
+            return_json["success"] = result["detected"]
+            return_json["data"] = result
     return return_json
 
+# NOT COMPLETE
 @app.route("/api/pipeline")
 def pipeline():
     asr_module = ASRModule()
@@ -86,9 +107,7 @@ def pipeline():
 
         if not transcribed_text:
             return None
-        # Incomplete
 
-# ?
 @app.route("/api/state")
 def get_state():
     return system_state # temporary

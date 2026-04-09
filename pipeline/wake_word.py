@@ -14,6 +14,7 @@ import numpy as np
 import torch
 import torch.nn as nn
 import librosa
+import soundfile
 
 # ---------------------------------------------------------------------------
 # Constants (must match training)
@@ -121,7 +122,7 @@ def process(audio, sr=TARGET_SR):
     Returns:
         dict with "detected" (bool) and "confidence" (float 0-1).
     """
-    if isinstance(audio, str):
+    if isinstance(audio, soundfile.SoundFile):
         audio, sr = librosa.load(audio, sr=TARGET_SR, mono=True)
 
     model = _load_model()

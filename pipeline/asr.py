@@ -5,11 +5,11 @@ class ASRModule():
         self.asr_model = whisper.load_model("base")
 
 
-    def process(self, audio_path):
+    def process(self, audio):
 
         try:
             transcribed_text = self.asr_model.transcribe(
-                audio_path,
+                audio,
                 langauge="en",
                 fp16=False,
                 verbose=False
