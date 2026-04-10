@@ -54,9 +54,12 @@ class FulfillmentModule():
         if result is None:
             return None # Error
         
+        print(result)
+        
         intent_response["description"] = result["weather"][0]["description"]
-        intent_response["current_temp"] = result["main"]["temp"]
-        intent_response["feels_like"] = result["main"]["feels_like"]
+        intent_response["temperature"] = result["main"]["temp"]
+        # intent_response["feels_like"] = result["main"]["feels_like"]
+        intent_response["windspeed"] = result["wind"]["speed"]
 
         # intent_response["description"] = result["description"]
         return intent_response
