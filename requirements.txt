@@ -6,6 +6,7 @@ transformers
 openai-whisper
 librosa
 scikit-learn
+seqeval
 pyttsx3
 sounddevice
 soundfile

@@ -31,6 +31,27 @@ cp .env.example .env   # fill in API keys
 python app.py
 ```
 
+## Pretrained Models
+
+Trained model weights are **not committed** to the repo (too large for GitHub).
+You have three options:
+
+1. **GitHub Release** — download the latest release assets from the
+   [Releases page](https://github.com/Henry52-collab/CSI_5180_VA/releases)
+2. **Shared cloud drives:**
+   - Dropbox: https://www.dropbox.com/scl/fo/9ikktf9d3rx9jajckh1st/ABlV6hiniWJ4rs-d5mpAhN8?rlkey=axp5xk5cspp7tib14zuprn4t3&st=cwbjz46i&dl=0
+   - Google Drive: https://drive.google.com/drive/folders/1NmHjJKRqhKSu88bOJMxzTEnIdoQA2VMK?usp=sharing
+3. **Retrain locally** (only if you have CUDA or patience):
+   ```bash
+   python training/train_intent.py     # ~30s on GPU, ~15min on CPU
+   ```
+
+Place the downloaded files into the expected folders:
+```
+models/intent_bert/model.pth
+models/intent_bert/label_maps.json
+```
+
 ## Project Structure
 
 ```
