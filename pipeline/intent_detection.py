@@ -193,9 +193,9 @@ class IntentDetector:
                 # Flush previous entity (if any)
                 if current_type:
                     slots[current_type] = " ".join(current_words)
-                current_type = label[2:]
+                current_type = label[2:].lower()
                 current_words = [word]
-            elif label.startswith("I-") and current_type == label[2:]:
+            elif label.startswith("I-") and current_type == label[2:].lower():
                 current_words.append(word)
             else:
                 # "O" or an I- that doesn't match current type — flush

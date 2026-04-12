@@ -1,0 +1,223 @@
+"""
+Fulfillment Module (Module 5)
+
+Routes intents to the correct handler:
+  - Movie queries → TMDB API
+  - Weather queries → OpenWeatherMap API
+  - Timer → parse duration
+  - Pet actions → update PetState
+  - Basic intents (greetings/goodbye/oos) → pass-through
+
+Original movie/weather/timer code by Laura (abo).
+Pet state + integration by Fengshou.
+"""
+
+from dotenv import load_dotenv
+import os
+from pytimeparse import parse as parse_duration
+
+from pipeline.utils.weather import WeatherAPIModule
+from pipeline.utils.movie import MovieAPIModule
+
+
+# ============================================================================
+# PetState — the only stateful part of the entire VA
+# ============================================================================
+
+class PetState:
+    def __init__(self):
+        self.name = "Atlas"
+        self.hunger = 50
+        self.happiness = 50
+        self.energy = 50
+        self.cleanliness = 50
+
+    def apply(self, action, slots):
+        before = self.to_dict()
+
+        if action == "feed_pet":
+            self.hunger = min(100, self.hunger + 25)
+        elif action == "play_with_pet":
+            self.happiness = min(100, self.happiness + 20)
+            self.energy = max(0, self.energy - 10)
+        elif action == "pet_the_cat":
+            self.happiness = min(100, self.happiness + 10)
+        elif action == "wash_pet":
+            self.cleanliness = min(100, self.cleanliness + 30)
+        elif action == "put_to_sleep":
+            self.energy = min(100, self.energy + 30)
+        elif action == "wake_up_pet":
+            self.energy = max(0, self.energy - 5)
+        elif action == "give_treat":
+            self.happiness = min(100, self.happiness + 15)
+            self.hunger = min(100, self.hunger + 5)
+        elif action == "rename_pet":
+            new_name = slots.get("name", self.name)
+            old_name = self.name
+            self.name = new_name
+            return before, self.to_dict(), old_name
+
+        return before, self.to_dict(), None
+
+    def to_dict(self):
+        return {
+            "name": self.name,
+            "hunger": self.hunger,
+            "happiness": self.happiness,
+            "energy": self.energy,
+            "cleanliness": self.cleanliness,
+        }
+
+
+# ============================================================================
+# FulfillmentModule
+# ============================================================================
+
+class FulfillmentModule:
+    def __init__(self, pet_state=None):
+        load_dotenv()
+        self.weather_api = WeatherAPIModule()
+        self.movie_api = MovieAPIModule()
+        self.pet_state = pet_state or PetState()
+
+    def process(self, intent_data):
+        intent = intent_data.get("intent", "")
+        slots = intent_data.get("slots", {})
+
+        if intent in ("greetings", "goodbye", "oos"):
+            return {"type": intent}
+
+        if "movie" in intent:
+            return self.process_movies(intent, slots)
+
+        if intent == "weather":
+            return self.process_weather(slots)
+
+        if intent == "set_timer":
+            return self.process_timer(slots)
+
+        if intent in ("feed_pet", "play_with_pet", "pet_the_cat", "wash_pet",
+                       "put_to_sleep", "wake_up_pet", "give_treat",
+                       "check_status", "rename_pet"):
+            return self.process_pet(intent, slots)
+
+        return {"type": "oos"}
+
+    # ------------------------------------------------------------------
+    # Timer
+    # ------------------------------------------------------------------
+    def process_timer(self, slots):
+        duration_str = slots.get("duration", "")
+        seconds = -1
+        try:
+            seconds = parse_duration(duration_str) or -1
+        except Exception:
+            pass
+        return {
+            "type": "timer",
+            "duration": seconds,
+            "duration_str": duration_str,
+        }
+
+    # ------------------------------------------------------------------
+    # Weather (by Laura)
+    # ------------------------------------------------------------------
+    def process_weather(self, slots):
+        city = slots.get("city", "Ottawa")
+        country = slots.get("country")
+
+        result = self.weather_api.get_weather(city, country)
+        if result is None:
+            return {"type": "weather", "error": "API call failed"}
+
+        return {
+            "type": "weather",
+            "city": city,
+            "description": result["weather"][0]["description"],
+            "temperature": result["main"]["temp"],
+            "windspeed": result["wind"]["speed"],
+        }
+
+    # ------------------------------------------------------------------
+    # Movies (by Laura)
+    # ------------------------------------------------------------------
+    def process_movies(self, intent, slots):
+        title = slots.get("title")
+        genre = slots.get("genre")
+        time_window = slots.get("time_window")
+
+        response = {"type": "movie"}
+
+        if title:
+            details = self.movie_api.get_movie_details(title)
+            if details is None:
+                return {"type": "movie", "error": f"Movie '{title}' not found"}
+
+            response["title"] = title
+            response["plot"] = details.get("overview", "")
+            response["rating"] = details.get("vote_average", "N/A")
+            response["cast"] = [
+                a["original_name"]
+                for a in details.get("credits", {}).get("cast", [])
+            ][:5]
+            response["director"] = [
+                c["original_name"]
+                for c in details.get("credits", {}).get("crew", [])
+                if c.get("job") == "Director"
+            ]
+            response["similar"] = [
+                m["original_title"]
+                for m in details.get("recommendations", {}).get("results", [])
+            ][:5]
+
+        if genre:
+            genre_results = self.movie_api.find_movie(genre)
+            if genre_results:
+                response["genre"] = genre
+                response["movies"] = [
+                    m["original_title"] for m in genre_results.get("results", [])
+                ][:5]
+
+        if time_window:
+            trending = self.movie_api.get_trending_movie(time_window)
+            if trending:
+                response["movies"] = [
+                    m["original_title"] for m in trending.get("results", [])
+                ][:5]
+
+        return response
+
+    # ------------------------------------------------------------------
+    # Pet (by Fengshou)
+    # ------------------------------------------------------------------
+    def process_pet(self, intent, slots):
+        if intent == "check_status":
+            return {
+                "type": "pet",
+                "action": intent,
+                "pet_name": self.pet_state.name,
+                "status": self.pet_state.to_dict(),
+            }
+
+        before, after, old_name = self.pet_state.apply(intent, slots)
+
+        response = {
+            "type": "pet",
+            "action": intent,
+            "pet_name": self.pet_state.name,
+            "status": after,
+            "before": before,
+            "after": after,
+        }
+
+        if intent == "feed_pet":
+            response["food_type"] = slots.get("food_type", "food")
+        elif intent == "play_with_pet":
+            response["toy"] = slots.get("toy", "toy")
+        elif intent == "give_treat":
+            response["treat_type"] = slots.get("treat_type", "treat")
+        elif intent == "rename_pet" and old_name:
+            response["old_name"] = old_name
+            response["new_name"] = self.pet_state.name
+
+        return response
