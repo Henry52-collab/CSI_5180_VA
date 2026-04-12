@@ -253,6 +253,19 @@ function clearPipelineProgress() {
 // Pet display
 // ============================================================================
 
+function barColor(v) {
+    if (v >= 60) return "#4ade80";
+    if (v >= 30) return "#fbbf24";
+    return "#f87171";
+}
+
+// Map pipeline intent names to demo animation names
+const INTENT_TO_ANIM = {
+    feed_pet: "feed", play_with_pet: "play", pet_the_cat: "pet_cat",
+    wash_pet: "wash", put_to_sleep: "sleep", wake_up_pet: "wake",
+    give_treat: "treat", check_status: "status", rename_pet: "rename",
+};
+
 function updatePet(petData) {
     const status = petData.status || petData.after || petData;
     if (status.name) $petName.textContent = status.name;
@@ -261,8 +274,16 @@ function updatePet(petData) {
         const val = status[key];
         if (val !== undefined) {
             refs.fill.style.width = val + "%";
+            refs.fill.style.backgroundColor = barColor(val);
             refs.val.textContent = val;
         }
+    }
+
+    // Trigger 3D animation if available
+    const action = petData.action;
+    if (action && typeof window.doroPlayAnimation === "function") {
+        const animName = INTENT_TO_ANIM[action] || action;
+        window.doroPlayAnimation(animName);
     }
 }
 

@@ -18,39 +18,46 @@ from pytimeparse import parse as parse_duration
 
 from pipeline.utils.weather import WeatherAPIModule
 from pipeline.utils.movie import MovieAPIModule
+import random
+from typing import Any
 
 
 # ============================================================================
 # PetState — the only stateful part of the entire VA
 # ============================================================================
 
+def random_float(min_val = -0.25, max_val = 0.25):
+    return 1 + random.uniform(min_val, max_val)
+
+
 class PetState:
     def __init__(self):
-        self.name = "Atlas"
+        self.name = "Doro"
         self.hunger = 50
         self.happiness = 50
         self.energy = 50
         self.cleanliness = 50
 
     def apply(self, action, slots):
+        random.seed()
         before = self.to_dict()
 
         if action == "feed_pet":
-            self.hunger = min(100, self.hunger + 25)
+            self.hunger = min(100, self.hunger + 25 * random_float())
         elif action == "play_with_pet":
-            self.happiness = min(100, self.happiness + 20)
-            self.energy = max(0, self.energy - 10)
+            self.happiness = min(100, self.happiness + 20 * random_float())
+            self.energy = max(0, self.energy - 10 * random_float())
         elif action == "pet_the_cat":
-            self.happiness = min(100, self.happiness + 10)
+            self.happiness = min(100, self.happiness + 10 * random_float())
         elif action == "wash_pet":
-            self.cleanliness = min(100, self.cleanliness + 30)
+            self.cleanliness = min(100, self.cleanliness + 30 * random_float())
         elif action == "put_to_sleep":
-            self.energy = min(100, self.energy + 30)
+            self.energy = min(100, self.energy + 30 * random_float())
         elif action == "wake_up_pet":
-            self.energy = max(0, self.energy - 5)
+            self.energy = max(0, self.energy - 5 * random_float())
         elif action == "give_treat":
-            self.happiness = min(100, self.happiness + 15)
-            self.hunger = min(100, self.hunger + 5)
+            self.happiness = min(100, self.happiness + 15 * random_float())
+            self.hunger = min(100, self.hunger + 5 * random_float())
         elif action == "rename_pet":
             new_name = slots.get("name", self.name)
             old_name = self.name
@@ -62,10 +69,10 @@ class PetState:
     def to_dict(self):
         return {
             "name": self.name,
-            "hunger": self.hunger,
-            "happiness": self.happiness,
-            "energy": self.energy,
-            "cleanliness": self.cleanliness,
+            "hunger": round(self.hunger),
+            "happiness": round(self.happiness),
+            "energy": round(self.energy),
+            "cleanliness": round(self.cleanliness),
         }
 
 
@@ -146,7 +153,7 @@ class FulfillmentModule:
         genre = slots.get("genre")
         time_window = slots.get("time_window")
 
-        response = {"type": "movie"}
+        response: dict[str, Any] = {"type": "movie"}
 
         if title:
             details = self.movie_api.get_movie_details(title)
@@ -207,7 +214,6 @@ class FulfillmentModule:
             "pet_name": self.pet_state.name,
             "status": after,
             "before": before,
-            "after": after,
         }
 
         if intent == "feed_pet":

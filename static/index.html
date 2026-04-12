@@ -5,6 +5,16 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atlas VA</title>
     <link rel="stylesheet" href="/static/css/style.css">
+
+    <!-- Three.js for 3D pet model -->
+    <script type="importmap">
+    {
+        "imports": {
+            "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+            "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+        }
+    }
+    </script>
 </head>
 <body>
     <!-- ============================================================ -->
@@ -95,8 +105,12 @@
             <!-- Pet Status -->
             <div id="pet-panel">
                 <div id="pet-header">
-                    <span id="pet-emoji">&#128049;</span>
-                    <span id="pet-name">Atlas</span>
+                    <span id="pet-name">Doro</span>
+                </div>
+                <!-- 3D Doro canvas (fallback to static image if Three.js fails) -->
+                <div id="doro-canvas-wrapper">
+                    <canvas id="doro-canvas"></canvas>
+                    <img id="doro-fallback" src="/static/models/doro.webp" alt="Doro" style="display:none">
                 </div>
                 <div class="stat-bar">
                     <label>Hunger</label>
@@ -131,5 +145,7 @@
     </aside>
 
     <script src="/static/js/main.js"></script>
+    <!-- 3D pet model (module script, graceful failure if CDN fails) -->
+    <script type="module" src="/static/js/doro3d.js"></script>
 </body>
 </html>

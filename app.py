@@ -12,11 +12,15 @@ Pipeline integration by Fengshou.
 """
 
 import io
+import mimetypes
 import os
 
 import librosa
 import soundfile
 from flask import Flask, request, jsonify
+
+mimetypes.add_type('application/javascript', '.js')
+mimetypes.add_type('text/css', '.css')
 
 from pipeline.user_verification import process as process_verify
 from pipeline.wake_word import process as process_wakeword
@@ -139,12 +143,17 @@ def pipeline():
     intent_data = intent_detector.process(transcribed_text)
 
     # --- Fulfillment ---
-    fulfillment_result = fulfillment.process(intent_data)
+    try:
+        fulfillment_result = fulfillment.process(intent_data)
+    except Exception as e:
+        fulfillment_result = {"type": "error", "error": str(e)}
 
     # --- NLG ---
     answer = nlg_module.process(intent_data, fulfillment_result, method=nlg_method)
 
-    return jsonify(make_response("pipeline", True, {
+    success = fulfillment_result.get("type") != "error"
+
+    return jsonify(make_response("pipeline", success, {
         "transcript": transcribed_text,
         "intent": intent_data.get("intent"),
         "confidence": intent_data.get("confidence"),
