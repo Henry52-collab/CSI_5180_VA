@@ -1,0 +1,135 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Atlas VA</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+    <!-- ============================================================ -->
+    <!-- Top Bar                                                       -->
+    <!-- ============================================================ -->
+    <header id="header">
+        <h1>Atlas VA</h1>
+        <div id="status-badge">LOCKED</div>
+    </header>
+
+    <!-- ============================================================ -->
+    <!-- Main Content                                                  -->
+    <!-- ============================================================ -->
+    <main>
+        <!-- ---- Step 1: Verification ---- -->
+        <section id="panel-verify" class="panel active">
+            <h2>Step 1: Verify Your Identity</h2>
+            <p>Record your voice or enter the bypass passcode.</p>
+            <div class="controls">
+                <button id="btn-verify-mic" class="btn-mic" title="Hold to record">
+                    <span class="mic-icon">&#127908;</span>
+                    <span class="mic-label">Hold to Record</span>
+                </button>
+                <div class="bypass-group">
+                    <input type="text" id="input-verify" placeholder="Bypass passcode" />
+                    <button id="btn-verify-bypass" class="btn-action">Submit</button>
+                </div>
+            </div>
+            <div id="verify-result" class="result-box"></div>
+        </section>
+
+        <!-- ---- Step 2: Wake Word ---- -->
+        <section id="panel-wake" class="panel">
+            <h2>Step 2: Wake Word</h2>
+            <p>Say "Hey Atlas" or click the button below.</p>
+            <div class="controls">
+                <button id="btn-wake-mic" class="btn-mic" title="Hold to record">
+                    <span class="mic-icon">&#127908;</span>
+                    <span class="mic-label">Hold to Record</span>
+                </button>
+                <button id="btn-wake-bypass" class="btn-action">Hey Atlas</button>
+            </div>
+            <div id="wake-result" class="result-box"></div>
+        </section>
+
+        <!-- ---- Step 3: Pipeline (main interaction) ---- -->
+        <section id="panel-pipeline" class="panel">
+            <h2>Talk to Atlas</h2>
+
+            <!-- Pipeline progress -->
+            <div id="pipeline-progress">
+                <span class="step" data-step="asr">ASR</span>
+                <span class="arrow">&rarr;</span>
+                <span class="step" data-step="intent">Intent</span>
+                <span class="arrow">&rarr;</span>
+                <span class="step" data-step="fulfillment">Fulfill</span>
+                <span class="arrow">&rarr;</span>
+                <span class="step" data-step="nlg">NLG</span>
+            </div>
+
+            <div class="controls">
+                <button id="btn-pipeline-mic" class="btn-mic" title="Hold to record">
+                    <span class="mic-icon">&#127908;</span>
+                    <span class="mic-label">Hold to Record</span>
+                </button>
+                <div class="bypass-group">
+                    <input type="text" id="input-pipeline" placeholder="Type your request..." />
+                    <button id="btn-pipeline-bypass" class="btn-action">Send</button>
+                </div>
+                <div class="nlg-toggle">
+                    <label for="nlg-method">NLG:</label>
+                    <select id="nlg-method">
+                        <option value="template">Template</option>
+                        <option value="llm">LLM (distilgpt2)</option>
+                    </select>
+                </div>
+            </div>
+
+            <!-- Response display -->
+            <div id="pipeline-response" class="result-box">
+                <div id="response-answer"></div>
+                <details id="response-details">
+                    <summary>Details</summary>
+                    <pre id="response-json"></pre>
+                </details>
+            </div>
+
+            <!-- Pet Status -->
+            <div id="pet-panel">
+                <div id="pet-header">
+                    <span id="pet-emoji">&#128049;</span>
+                    <span id="pet-name">Atlas</span>
+                </div>
+                <div class="stat-bar">
+                    <label>Hunger</label>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-hunger"></div></div>
+                    <span class="bar-value" id="val-hunger">50</span>
+                </div>
+                <div class="stat-bar">
+                    <label>Happiness</label>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-happiness"></div></div>
+                    <span class="bar-value" id="val-happiness">50</span>
+                </div>
+                <div class="stat-bar">
+                    <label>Energy</label>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-energy"></div></div>
+                    <span class="bar-value" id="val-energy">50</span>
+                </div>
+                <div class="stat-bar">
+                    <label>Cleanliness</label>
+                    <div class="bar-bg"><div class="bar-fill" id="bar-cleanliness"></div></div>
+                    <span class="bar-value" id="val-cleanliness">50</span>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- ============================================================ -->
+    <!-- Conversation Log                                              -->
+    <!-- ============================================================ -->
+    <aside id="chat-log">
+        <h3>Conversation</h3>
+        <div id="chat-messages"></div>
+    </aside>
+
+    <script src="/static/js/main.js"></script>
+</body>
+</html>
