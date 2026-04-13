@@ -27,8 +27,8 @@ HOP_SEC = 0.010
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "user_verify_svm.pkl")
 
-# Bypass passcode — change this to your team's chosen code
-PASSCODE = "atlas123"
+# Bypass passcode
+PASSCODE = "ATLAS"
 
 # Confidence threshold for verification
 THRESHOLD = 0.5
