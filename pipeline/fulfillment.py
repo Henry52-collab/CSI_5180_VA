@@ -187,17 +187,18 @@ class FulfillmentModule:
             response["plot"] = details.get("overview", "")
             response["rating"] = details.get("vote_average", "N/A")
             response["cast"] = [
-                a["original_name"]
+                a.get("name") or a.get("original_name", "")
                 for a in details.get("credits", {}).get("cast", [])
             ][:5]
             response["director"] = [
-                c["original_name"]
+                c.get("name") or c.get("original_name", "")
                 for c in details.get("credits", {}).get("crew", [])
                 if c.get("job") == "Director"
             ]
             response["similar"] = [
-                m["original_title"]
+                m.get("title") or m.get("original_title", "")
                 for m in details.get("recommendations", {}).get("results", [])
+                if (m.get("title") or m.get("original_title", "")).isascii()
             ][:5]
 
         if genre:
@@ -205,14 +206,18 @@ class FulfillmentModule:
             if genre_results:
                 response["genre"] = genre
                 response["movies"] = [
-                    m["original_title"] for m in genre_results.get("results", [])
+                    m.get("title") or m.get("original_title", "")
+                    for m in genre_results.get("results", [])
+                    if (m.get("title") or m.get("original_title", "")).isascii()
                 ][:5]
 
         if time_window:
             trending = self.movie_api.get_trending_movie(time_window)
             if trending:
                 response["movies"] = [
-                    m["original_title"] for m in trending.get("results", [])
+                    m.get("title") or m.get("original_title", "")
+                    for m in trending.get("results", [])
+                    if (m.get("title") or m.get("original_title", "")).isascii()
                 ][:5]
 
         if intent == "get_upcoming_movies":
@@ -220,15 +225,18 @@ class FulfillmentModule:
             if not upcoming:
                 return {"type": "movie", "error": "Could not fetch upcoming movies"}
             response["movies"] = [
-                m["original_title"] for m in upcoming.get("results", [])
+                m.get("title") or m.get("original_title", "")
+                for m in upcoming.get("results", [])
+                if (m.get("title") or m.get("original_title", "")).isascii()
             ][:5]
 
         if intent == "get_trending_movies" and "movies" not in response:
-            # Default to daily trending if the intent detector did not emit a time_window slot
             trending = self.movie_api.get_trending_movie("day")
             if trending:
                 response["movies"] = [
-                    m["original_title"] for m in trending.get("results", [])
+                    m.get("title") or m.get("original_title", "")
+                    for m in trending.get("results", [])
+                    if (m.get("title") or m.get("original_title", "")).isascii()
                 ][:5]
 
         return response

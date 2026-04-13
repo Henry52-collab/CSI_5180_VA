@@ -587,11 +587,18 @@ main {
 
 #chat-log {
     width: 280px;
+    height: calc(100vh - 50px);
     border-top: none;
     border-left: 2px solid var(--accent);
-    max-height: none;
     overflow-y: auto;
     flex-shrink: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#chat-messages {
+    flex: 1;
+    overflow-y: auto;
 }
 
 /* ---- Responsive ---- */
