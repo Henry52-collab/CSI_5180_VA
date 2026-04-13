@@ -14,3 +14,4 @@ playsound3
 sounddevice
 soundfile
 numpy
+openai

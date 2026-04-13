@@ -159,10 +159,11 @@ def _template_get_movie_rating(intent_data, api_response):
 def _template_get_movie_director(intent_data, api_response):
     title = api_response.get("title", "that movie")
     director = api_response.get("director", "unknown")
+    director_str = ", ".join(director)
     templates = [
-        f"{title} was directed by {director}.",
-        f"The director of {title} is {director}.",
-        f"{director} directed {title}.",
+        f"{title} was directed by {director_str}.",
+        f"The director of {title} is {director_str}.",
+        f"{director_str} directed {title}.",
     ]
     return random.choice(templates)
 
