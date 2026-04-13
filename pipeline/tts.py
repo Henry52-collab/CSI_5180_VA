@@ -19,6 +19,7 @@ Emotions (5): happy, excited, calm, apologetic, neutral.
 """
 
 import os
+import subprocess
 import sys
 import tempfile
 
@@ -120,11 +121,29 @@ def _pick_english_voice(engine):
         print(f"[TTS] could not select English voice: {e}")
 
 
+def _aiff_to_wav_bytes(aiff_path):
+    """Convert AIFF → WAV using macOS-native afconvert. Chrome on macOS refuses
+    to play AIFF inline and hands it off to system Media Session (the Now
+    Playing widget), which is useless for a hands-free VA demo."""
+    wav_path = aiff_path + ".wav"
+    subprocess.run(
+        ["afconvert", aiff_path, wav_path,
+         "-f", "WAVE", "-d", "LEI16@22050"],
+        check=True, capture_output=True,
+    )
+    try:
+        with open(wav_path, "rb") as f:
+            return f.read()
+    finally:
+        try: os.unlink(wav_path)
+        except Exception: pass
+
+
 def _process_pyttsx3(text, emotion):
     """Render text to audio bytes using OS-level simple TTS.
 
-    Saves to a temp file (WAV on Windows/Linux, AIFF on macOS — both playable
-    by HTML5 <audio>), reads bytes, cleans up.
+    Windows/Linux: pyttsx3 writes WAV directly.
+    macOS:         pyttsx3 writes AIFF (Chrome won't play inline) → convert to WAV.
     """
     import pyttsx3
 
@@ -138,13 +157,16 @@ def _process_pyttsx3(text, emotion):
     engine.setProperty("volume",
                        max(0.0, min(1.0, BASE_VOLUME + params["volume_delta"])))
 
-    suffix = ".aiff" if sys.platform == "darwin" else ".wav"
+    is_mac = sys.platform == "darwin"
+    suffix = ".aiff" if is_mac else ".wav"
     tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
     tmp.close()
 
     try:
         engine.save_to_file(text, tmp.name)
         engine.runAndWait()
+        if is_mac:
+            return _aiff_to_wav_bytes(tmp.name)
         with open(tmp.name, "rb") as f:
             return f.read()
     finally:
@@ -209,8 +231,8 @@ def mime_for_backend(backend):
     """
     if backend == "openai":
         return "audio/mpeg"
-    # pyttsx3
-    return "audio/aiff" if sys.platform == "darwin" else "audio/wav"
+    # pyttsx3 — WAV on all platforms (macOS AIFF is post-converted via afconvert)
+    return "audio/wav"
 
 
 def process(text, emotion="neutral", backend="pyttsx3"):

@@ -2,6 +2,11 @@
    Atlas VA — Dark Glassmorphism Theme
    ============================================================ */
 
+/* Tell the browser this page is dark-themed so native widgets
+   (select dropdowns, scrollbars, form controls) render in dark mode
+   regardless of the user's OS appearance setting. */
+html { color-scheme: dark; }
+
 :root {
     --bg-dark: #07090e;
     --surface: rgba(30, 41, 59, 0.45);
@@ -176,6 +181,12 @@ main {
     text-align: center;
     align-items: center;
 }
+
+/* Reserve space for the absolute-positioned label below the mic button */
+#panel-verify .btn-mic,
+#panel-wake .btn-mic {
+    margin-bottom: 30px;
+}
 .panel-icon { font-size: 3rem; margin-bottom: 16px; }
 .panel h2   { font-size: 1.5rem; font-weight: 600; margin-bottom: 8px; }
 .panel p    { color: var(--text-muted); margin-bottom: 28px; font-size: 0.95rem; line-height: 1.5; }
@@ -277,6 +288,19 @@ main {
     transform: translateY(-50%);
     pointer-events: none;
     color: var(--text-muted);
+}
+
+/* Native dropdown menu uses OS colors by default. Force dark bg + light text
+   so options are readable when the browser opens the popup. */
+.select-wrapper select option,
+.select-wrapper select optgroup {
+    background-color: #0f172a;
+    color: var(--text);
+}
+.select-wrapper select optgroup {
+    color: var(--text-muted);
+    font-style: italic;
+    font-weight: 600;
 }
 
 /* NLG/TTS toggle row */
