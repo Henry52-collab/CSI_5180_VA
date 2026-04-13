@@ -127,22 +127,45 @@ class FulfillmentModule:
         }
 
     # ------------------------------------------------------------------
-    # Weather (by Laura)
+    # Weather (by Laura; hardened with structured error handling)
     # ------------------------------------------------------------------
     def process_weather(self, slots):
         city = slots.get("city", "Ottawa")
         country = slots.get("country")
 
         result = self.weather_api.get_weather(city, country)
-        if result is None:
-            return {"type": "weather", "error": "API call failed"}
+
+        # weather module now returns {"ok": bool, ...} with error metadata on failure
+        if not result.get("ok"):
+            return {
+                "type": "weather",
+                "city": result.get("city", city),
+                "country": result.get("country", country),
+                "error": result.get("error", "request_failed"),
+                "message": result.get("message", "I couldn't get the weather right now."),
+            }
+
+        data = result.get("data", {})
+        try:
+            description = data["weather"][0]["description"]
+            temperature = data["main"]["temp"]
+            windspeed  = data["wind"]["speed"]
+        except (KeyError, IndexError, TypeError):
+            return {
+                "type": "weather",
+                "city": result.get("city", city),
+                "country": result.get("country", country),
+                "error": "invalid_response",
+                "message": "The weather service returned incomplete data.",
+            }
 
         return {
             "type": "weather",
-            "city": city,
-            "description": result["weather"][0]["description"],
-            "temperature": result["main"]["temp"],
-            "windspeed": result["wind"]["speed"],
+            "city": result.get("city", city),
+            "country": result.get("country", country),
+            "description": description,
+            "temperature": temperature,
+            "windspeed": windspeed,
         }
 
     # ------------------------------------------------------------------
@@ -187,6 +210,22 @@ class FulfillmentModule:
 
         if time_window:
             trending = self.movie_api.get_trending_movie(time_window)
+            if trending:
+                response["movies"] = [
+                    m["original_title"] for m in trending.get("results", [])
+                ][:5]
+
+        if intent == "get_upcoming_movies":
+            upcoming = self.movie_api.get_upcoming_movies()
+            if not upcoming:
+                return {"type": "movie", "error": "Could not fetch upcoming movies"}
+            response["movies"] = [
+                m["original_title"] for m in upcoming.get("results", [])
+            ][:5]
+
+        if intent == "get_trending_movies" and "movies" not in response:
+            # Default to daily trending if the intent detector did not emit a time_window slot
+            trending = self.movie_api.get_trending_movie("day")
             if trending:
                 response["movies"] = [
                     m["original_title"] for m in trending.get("results", [])

@@ -210,6 +210,10 @@ class IntentDetector:
         if current_type:
             slots[current_type] = " ".join(current_words)
 
+        # Strip trailing punctuation (Whisper adds ?.! to transcriptions)
+        for key in slots:
+            slots[key] = slots[key].strip().rstrip("?.!,;:")
+
         return slots
 
 

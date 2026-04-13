@@ -36,7 +36,7 @@
             <div class="controls">
                 <button id="btn-verify-mic" class="btn-mic" title="Hold to record">
                     <span class="mic-icon">&#127908;</span>
-                    <span class="mic-label">Hold to Record</span>
+                    <span class="mic-label">Click to Record</span>
                 </button>
                 <div class="bypass-group">
                     <input type="text" id="input-verify" placeholder="Bypass passcode" />
@@ -49,13 +49,16 @@
         <!-- ---- Step 2: Wake Word ---- -->
         <section id="panel-wake" class="panel">
             <h2>Step 2: Wake Word</h2>
-            <p>Say "Hey Atlas" or click the button below.</p>
+            <p>Say That Words!</p>
             <div class="controls">
-                <button id="btn-wake-mic" class="btn-mic" title="Hold to record">
+                <button id="btn-wake-mic" class="btn-mic" title="Click to record">
                     <span class="mic-icon">&#127908;</span>
-                    <span class="mic-label">Hold to Record</span>
+                    <span class="mic-label">Click to Record</span>
                 </button>
-                <button id="btn-wake-bypass" class="btn-action">Hey Atlas</button>
+                <div class="bypass-group">
+                    <input type="text" id="input-wake" placeholder="Type wake word..." />
+                    <button id="btn-wake-bypass" class="btn-action">Submit</button>
+                </div>
             </div>
             <div id="wake-result" class="result-box"></div>
         </section>
@@ -75,62 +78,144 @@
                 <span class="step" data-step="nlg">NLG</span>
             </div>
 
-            <div class="controls">
-                <button id="btn-pipeline-mic" class="btn-mic" title="Hold to record">
-                    <span class="mic-icon">&#127908;</span>
-                    <span class="mic-label">Hold to Record</span>
-                </button>
-                <div class="bypass-group">
-                    <input type="text" id="input-pipeline" placeholder="Type your request..." />
-                    <button id="btn-pipeline-bypass" class="btn-action">Send</button>
-                </div>
-                <div class="nlg-toggle">
-                    <label for="nlg-method">NLG:</label>
-                    <select id="nlg-method">
-                        <option value="template">Template</option>
-                        <option value="llm">LLM (distilgpt2)</option>
-                    </select>
-                </div>
-            </div>
+            <!-- Three-column layout -->
+            <div id="pipeline-columns">
+                <!-- ===== LEFT COLUMN: Interaction + Timer ===== -->
+                <div id="col-left">
+                    <div class="controls">
+                        <div class="bypass-group">
+                            <input type="text" id="input-pipeline" placeholder="Type your request..." />
+                            <button id="btn-pipeline-bypass" class="btn-action">Send</button>
+                        </div>
+                        <div class="nlg-toggle">
+                            <label for="nlg-method">NLG:</label>
+                            <select id="nlg-method">
+                                <option value="template">Template</option>
+                                <option value="llm">LLM (distilgpt2)</option>
+                            </select>
+                        </div>
+                        <div class="nlg-toggle">
+                            <label for="tts-backend">TTS:</label>
+                            <select id="tts-backend">
+                                <option value="pyttsx3">Local (pyttsx3)</option>
+                                <option value="openai" selected>Neural (OpenAI)</option>
+                            </select>
+                        </div>
+                    </div>
 
-            <!-- Response display -->
-            <div id="pipeline-response" class="result-box">
-                <div id="response-answer"></div>
-                <details id="response-details">
-                    <summary>Details</summary>
-                    <pre id="response-json"></pre>
-                </details>
-            </div>
+                    <!-- Intent/Slot Bypass -->
+                    <details id="bypass-panel">
+                        <summary>Intent Bypass (skip ASR + Intent Detection)</summary>
+                        <div class="bypass-intent-form">
+                            <div class="bypass-row">
+                                <label for="bypass-intent">Intent:</label>
+                                <select id="bypass-intent">
+                                    <optgroup label="Basic">
+                                        <option value="greetings">Greetings</option>
+                                        <option value="goodbye">Goodbye</option>
+                                        <option value="oos">Out of Scope</option>
+                                        <option value="set_timer">Set Timer</option>
+                                        <option value="weather">Weather</option>
+                                    </optgroup>
+                                    <optgroup label="Movie">
+                                        <option value="get_movie_cast">Get Movie Cast</option>
+                                        <option value="get_similar_movies">Get Similar Movies</option>
+                                        <option value="get_movie_plot">Get Movie Plot</option>
+                                        <option value="get_movies_by_genre">Get Movies by Genre</option>
+                                        <option value="get_movie_rating">Get Movie Rating</option>
+                                        <option value="get_movie_director">Get Movie Director</option>
+                                        <option value="get_trending_movies">Get Trending Movies</option>
+                                        <option value="get_upcoming_movies">Get Upcoming Movies</option>
+                                    </optgroup>
+                                    <optgroup label="Pet">
+                                        <option value="feed_pet">Feed Pet</option>
+                                        <option value="play_with_pet">Play with Pet</option>
+                                        <option value="pet_the_cat">Pet the Cat</option>
+                                        <option value="wash_pet">Wash Pet</option>
+                                        <option value="put_to_sleep">Put to Sleep</option>
+                                        <option value="wake_up_pet">Wake Up Pet</option>
+                                        <option value="give_treat">Give Treat</option>
+                                        <option value="check_status">Check Status</option>
+                                        <option value="rename_pet">Rename Pet</option>
+                                    </optgroup>
+                                </select>
+                            </div>
+                            <div id="bypass-slots"></div>
+                            <button id="btn-bypass-submit" class="btn-action">Submit Bypass</button>
+                        </div>
+                    </details>
 
-            <!-- Pet Status -->
-            <div id="pet-panel">
-                <div id="pet-header">
-                    <span id="pet-name">Doro</span>
+                    <!-- Response display -->
+                    <div id="pipeline-response" class="result-box">
+                        <div id="response-answer"></div>
+                        <details id="response-details">
+                            <summary>Details</summary>
+                            <pre id="response-json"></pre>
+                        </details>
+                    </div>
+
+                    <!-- Timer (below interaction) -->
+                    <div id="timer-panel">
+                        <h3>&#9201; Timer</h3>
+                        <div id="timer-inputs">
+                            <div class="timer-field">
+                                <input type="number" id="timer-min" min="0" max="99" value="0">
+                                <label>min</label>
+                            </div>
+                            <span class="timer-colon">:</span>
+                            <div class="timer-field">
+                                <input type="number" id="timer-sec" min="0" max="59" value="5">
+                                <label>sec</label>
+                            </div>
+                        </div>
+                        <div id="timer-buttons">
+                            <button id="timer-start" class="btn-action">&#9654; Start</button>
+                            <button id="timer-pause" class="btn-action">&#9208; Pause</button>
+                            <button id="timer-reset" class="btn-action">&#8634; Reset</button>
+                        </div>
+                        <div id="timer-display">00:05</div>
+                    </div>
                 </div>
-                <!-- 3D Doro canvas (fallback to static image if Three.js fails) -->
-                <div id="doro-canvas-wrapper">
-                    <canvas id="doro-canvas"></canvas>
-                    <img id="doro-fallback" src="/static/models/doro.webp" alt="Doro" style="display:none">
+
+                <!-- ===== CENTER: Record Button ===== -->
+                <div id="col-center">
+                    <button id="btn-pipeline-mic" class="btn-mic" title="Click to record">
+                        <span class="mic-icon">&#127908;</span>
+                        <span class="mic-label">Click to Record</span>
+                    </button>
                 </div>
-                <div class="stat-bar">
-                    <label>Hunger</label>
-                    <div class="bar-bg"><div class="bar-fill" id="bar-hunger"></div></div>
-                    <span class="bar-value" id="val-hunger">50</span>
-                </div>
-                <div class="stat-bar">
-                    <label>Happiness</label>
-                    <div class="bar-bg"><div class="bar-fill" id="bar-happiness"></div></div>
-                    <span class="bar-value" id="val-happiness">50</span>
-                </div>
-                <div class="stat-bar">
-                    <label>Energy</label>
-                    <div class="bar-bg"><div class="bar-fill" id="bar-energy"></div></div>
-                    <span class="bar-value" id="val-energy">50</span>
-                </div>
-                <div class="stat-bar">
-                    <label>Cleanliness</label>
-                    <div class="bar-bg"><div class="bar-fill" id="bar-cleanliness"></div></div>
-                    <span class="bar-value" id="val-cleanliness">50</span>
+
+                <!-- ===== RIGHT COLUMN: Doro ===== -->
+                <div id="col-right">
+                    <div id="pet-panel">
+                        <div id="pet-header">
+                            <span id="pet-name">Doro</span>
+                        </div>
+                        <div id="doro-canvas-wrapper">
+                            <canvas id="doro-canvas"></canvas>
+                            <img id="doro-fallback" src="/static/models/doro.webp" alt="Doro" style="display:none">
+                        </div>
+                        <div class="stat-bar">
+                            <label>Hunger</label>
+                            <div class="bar-bg"><div class="bar-fill" id="bar-hunger"></div></div>
+                            <span class="bar-value" id="val-hunger">50</span>
+                        </div>
+                        <div class="stat-bar">
+                            <label>Happiness</label>
+                            <div class="bar-bg"><div class="bar-fill" id="bar-happiness"></div></div>
+                            <span class="bar-value" id="val-happiness">50</span>
+                        </div>
+                        <div class="stat-bar">
+                            <label>Energy</label>
+                            <div class="bar-bg"><div class="bar-fill" id="bar-energy"></div></div>
+                            <span class="bar-value" id="val-energy">50</span>
+                        </div>
+                        <div class="stat-bar">
+                            <label>Cleanliness</label>
+                            <div class="bar-bg"><div class="bar-fill" id="bar-cleanliness"></div></div>
+                            <span class="bar-value" id="val-cleanliness">50</span>
+                        </div>
+                    </div>
                 </div>
             </div>
         </section>

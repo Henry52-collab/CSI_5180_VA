@@ -46,6 +46,7 @@ const $verifyResult    = document.getElementById("verify-result");
 
 // Wake
 const $btnWakeMic    = document.getElementById("btn-wake-mic");
+const $inputWake     = document.getElementById("input-wake");
 const $btnWakeBypass = document.getElementById("btn-wake-bypass");
 const $wakeResult    = document.getElementById("wake-result");
 
@@ -54,6 +55,7 @@ const $btnPipelineMic    = document.getElementById("btn-pipeline-mic");
 const $inputPipeline     = document.getElementById("input-pipeline");
 const $btnPipelineBypass = document.getElementById("btn-pipeline-bypass");
 const $nlgMethod         = document.getElementById("nlg-method");
+const $ttsBackend        = document.getElementById("tts-backend");
 const $responseAnswer    = document.getElementById("response-answer");
 const $responseJson      = document.getElementById("response-json");
 const $pipelineResponse  = document.getElementById("pipeline-response");
@@ -152,8 +154,11 @@ $inputVerify.addEventListener("keydown", (e) => {
 // ============================================================================
 
 $btnWakeBypass.addEventListener("click", async () => {
+    const text = $inputWake.value.trim();
+    if (!text) return;
+
     const fd = new FormData();
-    fd.append("text", "hey atlas");
+    fd.append("text", text);
 
     $wakeResult.innerHTML = '<span class="text-muted">Waking...</span>';
     const result = await apiPost("/api/wake", fd);
@@ -162,8 +167,12 @@ $btnWakeBypass.addEventListener("click", async () => {
         $wakeResult.innerHTML = '<span class="success">Atlas is awake!</span>';
         setSystemState("awake");
     } else {
-        $wakeResult.innerHTML = '<span class="error">Wake word not detected.</span>';
+        $wakeResult.innerHTML = '<span class="error">Wake word not detected. Try typing "Hey Atlas".</span>';
     }
+});
+
+$inputWake.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") $btnWakeBypass.click();
 });
 
 
@@ -173,6 +182,7 @@ $btnWakeBypass.addEventListener("click", async () => {
 
 async function sendPipeline(formData) {
     formData.append("nlg_method", $nlgMethod.value);
+    formData.append("tts_backend", $ttsBackend ? $ttsBackend.value : "pyttsx3");
 
     setSystemState("processing");
     setPipelineProgress("asr");
@@ -193,9 +203,18 @@ async function sendPipeline(formData) {
         if (d.transcript) addChat("user", d.transcript);
         if (d.answer) addChat("assistant", d.answer);
 
+        // TTS — play backend-generated audio with emotion-driven prosody, or
+        // fall back to browser Web Speech API if backend TTS failed.
+        playAnswer(d);
+
         // Update pet if relevant
         if (d.fulfillment && d.fulfillment.type === "pet") {
             updatePet(d.fulfillment);
+        }
+
+        // Auto-start timer if set_timer intent
+        if (d.fulfillment && d.fulfillment.type === "timer" && d.fulfillment.duration > 0) {
+            timerStart(d.fulfillment.duration);
         }
 
         // Also poll state to catch any pet changes
@@ -224,6 +243,99 @@ $btnPipelineBypass.addEventListener("click", async () => {
 
 $inputPipeline.addEventListener("keydown", (e) => {
     if (e.key === "Enter") $btnPipelineBypass.click();
+});
+
+
+// ============================================================================
+// Intent/Slot Bypass
+// ============================================================================
+
+const GENRES = [
+    "Action", "Adventure", "Animation", "Comedy", "Crime",
+    "Documentary", "Drama", "Fantasy", "Horror", "Mystery",
+    "Romance", "Science Fiction", "Thriller"
+];
+
+const $bypassIntent = document.getElementById("bypass-intent");
+const $bypassSlots = document.getElementById("bypass-slots");
+const $btnBypassSubmit = document.getElementById("btn-bypass-submit");
+
+const SLOT_CONFIG = {
+    get_movie_cast:    [{id: "title", placeholder: "Movie title (e.g. Inception)"}],
+    get_similar_movies:[{id: "title", placeholder: "Movie title"}],
+    get_movie_plot:    [{id: "title", placeholder: "Movie title"}],
+    get_movie_rating:  [{id: "title", placeholder: "Movie title"}],
+    get_movie_director:[{id: "title", placeholder: "Movie title"}],
+    get_movies_by_genre:[{id: "genre", type: "select", options: GENRES}],
+    get_trending_movies:[{id: "time_window", type: "select", options: ["day", "week"]}],
+    weather:           [{id: "city", placeholder: "City name (e.g. Ottawa)"}],
+    set_timer:         [{id: "duration", placeholder: "Duration (e.g. 5 minutes)"}],
+    feed_pet:          [{id: "food_type", placeholder: "Food (e.g. fish)", optional: true}],
+    play_with_pet:     [{id: "toy", placeholder: "Toy (e.g. ball)", optional: true}],
+    give_treat:        [{id: "treat_type", placeholder: "Treat (e.g. cookie)", optional: true}],
+    rename_pet:        [{id: "name", placeholder: "New name"}],
+};
+
+function renderBypassSlots() {
+    const intent = $bypassIntent.value;
+    const config = SLOT_CONFIG[intent];
+    if (!config) {
+        $bypassSlots.innerHTML = "";
+        return;
+    }
+    $bypassSlots.innerHTML = config.map(slot => {
+        if (slot.type === "select") {
+            const opts = slot.options.map(o =>
+                `<option value="${o.toLowerCase()}">${o}</option>`
+            ).join("");
+            return `<div class="bypass-row"><label>${slot.id}:</label><select id="bypass-slot-${slot.id}">${opts}</select></div>`;
+        }
+        return `<div class="bypass-row"><label>${slot.id}:</label><input type="text" id="bypass-slot-${slot.id}" placeholder="${slot.placeholder || ""}" /></div>`;
+    }).join("");
+}
+
+$bypassIntent.addEventListener("change", renderBypassSlots);
+renderBypassSlots();
+
+$btnBypassSubmit.addEventListener("click", async () => {
+    const intent = $bypassIntent.value;
+    const config = SLOT_CONFIG[intent] || [];
+    const slots = {};
+    for (const slot of config) {
+        const el = document.getElementById(`bypass-slot-${slot.id}`);
+        if (el && el.value.trim()) {
+            slots[slot.id] = el.value.trim().toLowerCase();
+        }
+    }
+
+    const fd = new FormData();
+    fd.append("intent", intent);
+    fd.append("slots", JSON.stringify(slots));
+    fd.append("nlg_method", $nlgMethod.value);
+    fd.append("tts_backend", $ttsBackend ? $ttsBackend.value : "pyttsx3");
+
+    setSystemState("processing");
+    setPipelineProgress("done");
+
+    const result = await apiPost("/api/pipeline", fd);
+
+    if (result.success && result.data) {
+        const d = result.data;
+        $responseAnswer.textContent = d.answer || "(no answer)";
+        $responseJson.textContent = JSON.stringify(d, null, 2);
+        $pipelineResponse.style.display = "block";
+
+        addChat("user", `[${intent}] ${JSON.stringify(slots)}`);
+        if (d.answer) addChat("assistant", d.answer);
+        playAnswer(d);
+
+        if (d.fulfillment && d.fulfillment.type === "pet") {
+            updatePet(d.fulfillment);
+        }
+        await pollState();
+    }
+
+    setSystemState("awake");
 });
 
 
@@ -296,6 +408,40 @@ async function pollState() {
 
 
 // ============================================================================
+// TTS — prefer backend-generated audio (emotion-aware prosody), fall back to
+// browser Web Speech API if the backend failed.
+// ============================================================================
+
+function playAnswer(d) {
+    if (!d || !d.answer) return;
+
+    // Cancel any in-flight speech so we don't overlap
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+
+    if (d.audio_b64) {
+        const mime = d.audio_mime || "audio/mpeg";
+        const audio = new Audio(`data:${mime};base64,${d.audio_b64}`);
+        audio.play().catch((err) => {
+            console.warn("Backend audio playback failed, falling back to browser TTS:", err);
+            speak(d.answer);
+        });
+    } else {
+        if (d.tts_error) console.warn("Backend TTS error:", d.tts_error);
+        speak(d.answer);
+    }
+}
+
+function speak(text) {
+    if (!window.speechSynthesis) return;
+    window.speechSynthesis.cancel();
+    const utterance = new SpeechSynthesisUtterance(text);
+    utterance.lang = "en-US";
+    utterance.rate = 1.0;
+    window.speechSynthesis.speak(utterance);
+}
+
+
+// ============================================================================
 // Chat log
 // ============================================================================
 
@@ -309,70 +455,124 @@ function addChat(role, text) {
 
 
 // ============================================================================
-// Mic recording (push-to-hold)
+// WebM → WAV conversion (so backend doesn't need ffmpeg)
+// ============================================================================
+
+async function blobToWav(blob) {
+    const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+    const arrayBuf = await blob.arrayBuffer();
+    const decoded = await audioCtx.decodeAudioData(arrayBuf);
+    audioCtx.close();
+
+    const sampleRate = 16000;
+    const numChannels = 1;
+
+    // Resample to 16kHz mono (what Whisper/librosa expects)
+    const offlineCtx = new OfflineAudioContext(numChannels, decoded.duration * sampleRate, sampleRate);
+    const source = offlineCtx.createBufferSource();
+    source.buffer = decoded;
+    source.connect(offlineCtx.destination);
+    source.start();
+    const resampled = await offlineCtx.startRendering();
+    const pcm = resampled.getChannelData(0);
+
+    // Encode as WAV
+    const wavBuf = new ArrayBuffer(44 + pcm.length * 2);
+    const view = new DataView(wavBuf);
+    const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+
+    writeStr(0, "RIFF");
+    view.setUint32(4, 36 + pcm.length * 2, true);
+    writeStr(8, "WAVE");
+    writeStr(12, "fmt ");
+    view.setUint32(16, 16, true);
+    view.setUint16(20, 1, true);             // PCM
+    view.setUint16(22, numChannels, true);
+    view.setUint32(24, sampleRate, true);
+    view.setUint32(28, sampleRate * numChannels * 2, true);
+    view.setUint16(32, numChannels * 2, true);
+    view.setUint16(34, 16, true);            // 16-bit
+    writeStr(36, "data");
+    view.setUint32(40, pcm.length * 2, true);
+
+    for (let i = 0; i < pcm.length; i++) {
+        const s = Math.max(-1, Math.min(1, pcm[i]));
+        view.setInt16(44 + i * 2, s * 0x7FFF, true);
+    }
+
+    return new Blob([wavBuf], { type: "audio/wav" });
+}
+
+
+// ============================================================================
+// Mic recording (click to start, click again to stop)
 // ============================================================================
 
 function setupMic(button, sendCallback) {
     let recorder = null;
     let chunks = [];
+    let stream = null;
 
-    button.addEventListener("mousedown", async (e) => {
-        e.preventDefault();
-        try {
-            const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
-            chunks = [];
-            recorder = new MediaRecorder(stream);
-            recorder.ondataavailable = (ev) => chunks.push(ev.data);
-            recorder.onstop = () => {
-                stream.getTracks().forEach((t) => t.stop());
-                const blob = new Blob(chunks, { type: recorder.mimeType });
-                sendCallback(blob);
-            };
-            recorder.start();
-            button.classList.add("recording");
-        } catch (err) {
-            console.error("Mic access denied:", err);
-        }
-    });
+    const label = button.querySelector(".mic-label");
 
-    const stop = () => {
+    button.addEventListener("click", async () => {
         if (recorder && recorder.state === "recording") {
             recorder.stop();
             button.classList.remove("recording");
+            if (label) label.textContent = "Click to Record";
+            return;
         }
-    };
 
-    button.addEventListener("mouseup", stop);
-    button.addEventListener("mouseleave", stop);
-
-    // Touch support for mobile
-    button.addEventListener("touchstart", (e) => {
-        e.preventDefault();
-        button.dispatchEvent(new MouseEvent("mousedown"));
-    });
-    button.addEventListener("touchend", (e) => {
-        e.preventDefault();
-        stop();
+        try {
+            // Disable WebRTC DSP — it aggressively compresses quiet speech and
+            // erases spectral detail (learning-based noise suppression), which
+            // tanks both ASR accuracy and speaker-verification confidence.
+            stream = await navigator.mediaDevices.getUserMedia({
+                audio: {
+                    echoCancellation: false,
+                    noiseSuppression: false,
+                    autoGainControl: false,
+                }
+            });
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (ev) => chunks.push(ev.data);
+            recorder.onstop = async () => {
+                stream.getTracks().forEach((t) => t.stop());
+                const webmBlob = new Blob(chunks, { type: recorder.mimeType });
+                const wavBlob = await blobToWav(webmBlob);
+                sendCallback(wavBlob);
+                recorder = null;
+            };
+            recorder.start();
+            button.classList.add("recording");
+            if (label) label.textContent = "Click to Send";
+        } catch (err) {
+            console.error("Mic access denied:", err);
+        }
     });
 }
 
 // Wire up mic buttons
 setupMic($btnVerifyMic, async (blob) => {
     const fd = new FormData();
-    fd.append("file", blob, "recording.webm");
+    fd.append("file", blob, "recording.wav");
     $verifyResult.innerHTML = '<span class="text-muted">Verifying...</span>';
     const result = await apiPost("/api/verify", fd);
+    const conf = result.data?.confidence;
+    const confStr = conf !== undefined ? ` (confidence: ${(conf * 100).toFixed(1)}%)` : "";
     if (result.success) {
         $verifyResult.innerHTML = '<span class="success">Verified!</span>';
         setSystemState("unlocked");
     } else {
-        $verifyResult.innerHTML = '<span class="error">Verification failed.</span>';
+        // $verifyResult.innerHTML = '<span class="error">Verification failed.</span>';
+        $verifyResult.innerHTML = `<span class="error">Verification failed.${confStr} Threshold: 50%</span>`;
     }
 });
 
 setupMic($btnWakeMic, async (blob) => {
     const fd = new FormData();
-    fd.append("file", blob, "recording.webm");
+    fd.append("file", blob, "recording.wav");
     $wakeResult.innerHTML = '<span class="text-muted">Listening...</span>';
     const result = await apiPost("/api/wake", fd);
     if (result.success) {
@@ -385,9 +585,107 @@ setupMic($btnWakeMic, async (blob) => {
 
 setupMic($btnPipelineMic, async (blob) => {
     const fd = new FormData();
-    fd.append("file", blob, "recording.webm");
+    fd.append("file", blob, "recording.wav");
     await sendPipeline(fd);
 });
+
+
+// ============================================================================
+// Timer
+// ============================================================================
+
+let timerInterval = null;
+let timerRemaining = 5;
+let timerRunning = false;
+
+const $timerDisplay = document.getElementById("timer-display");
+const $timerMin = document.getElementById("timer-min");
+const $timerSec = document.getElementById("timer-sec");
+
+function timerFormat(secs) {
+    const m = Math.floor(secs / 60).toString().padStart(2, "0");
+    const s = (secs % 60).toString().padStart(2, "0");
+    return `${m}:${s}`;
+}
+
+function timerUpdateDisplay() {
+    $timerDisplay.textContent = timerFormat(timerRemaining);
+    $timerDisplay.className = "";
+    if (timerRunning && timerRemaining <= 10 && timerRemaining > 0) {
+        $timerDisplay.className = "urgent";
+    }
+}
+
+function timerStart(seconds) {
+    if (seconds !== undefined) {
+        timerRemaining = seconds;
+    } else if (!timerRunning && timerRemaining <= 0) {
+        const mins = parseInt($timerMin.value) || 0;
+        const secs = parseInt($timerSec.value) || 0;
+        timerRemaining = mins * 60 + secs;
+    }
+    if (timerRemaining <= 0) return;
+    if (timerRunning) return;
+
+    timerRunning = true;
+    timerUpdateDisplay();
+
+    timerInterval = setInterval(() => {
+        timerRemaining--;
+        timerUpdateDisplay();
+        if (timerRemaining <= 0) {
+            clearInterval(timerInterval);
+            timerRunning = false;
+            $timerDisplay.textContent = "00:00";
+            $timerDisplay.className = "done";
+            try {
+                const ctx = new (window.AudioContext || window.webkitAudioContext)();
+                const osc = ctx.createOscillator();
+                const gain = ctx.createGain();
+                osc.connect(gain);
+                gain.connect(ctx.destination);
+                osc.type = "sine";
+                osc.frequency.value = 880;
+                gain.gain.setValueAtTime(0.3, ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(0.001, ctx.currentTime + 0.8);
+                osc.start(ctx.currentTime);
+                osc.stop(ctx.currentTime + 0.8);
+            } catch (e) {}
+            speak("Timer is done!");
+        }
+    }, 1000);
+}
+
+function timerPause() {
+    if (!timerRunning) return;
+    clearInterval(timerInterval);
+    timerRunning = false;
+}
+
+function timerReset() {
+    clearInterval(timerInterval);
+    timerRunning = false;
+    const mins = parseInt($timerMin.value) || 0;
+    const secs = parseInt($timerSec.value) || 0;
+    timerRemaining = mins * 60 + secs;
+    $timerDisplay.className = "";
+    timerUpdateDisplay();
+}
+
+function syncTimerInputs() {
+    if (!timerRunning) {
+        const mins = parseInt($timerMin.value) || 0;
+        const secs = parseInt($timerSec.value) || 0;
+        timerRemaining = mins * 60 + secs;
+        timerUpdateDisplay();
+    }
+}
+
+document.getElementById("timer-start").addEventListener("click", () => timerStart());
+document.getElementById("timer-pause").addEventListener("click", timerPause);
+document.getElementById("timer-reset").addEventListener("click", timerReset);
+$timerMin.addEventListener("input", syncTimerInputs);
+$timerSec.addEventListener("input", syncTimerInputs);
 
 
 // ============================================================================
@@ -396,3 +694,4 @@ setupMic($btnPipelineMic, async (blob) => {
 
 setSystemState("locked");
 clearPipelineProgress();
+syncTimerInputs();

@@ -1,0 +1,222 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Atlas VA — Collect Voice Samples</title>
+    <link rel="stylesheet" href="/static/css/style.css">
+    <style>
+        body { display: block; height: auto; overflow: auto; padding: 40px; }
+        .recorder {
+            max-width: 600px;
+            margin: 0 auto;
+            background: var(--surface);
+            padding: 32px;
+            border-radius: var(--radius);
+        }
+        .recorder h1 { margin-bottom: 8px; }
+        .recorder p  { color: var(--text-muted); margin-bottom: 20px; line-height: 1.5; }
+        .row { display: flex; gap: 12px; align-items: center; margin-bottom: 16px; }
+        .row label { min-width: 80px; }
+        .row input, .row select {
+            flex: 1; padding: 10px;
+            background: var(--bg); color: var(--text);
+            border: 1px solid var(--accent); border-radius: 6px;
+            font-size: 1rem;
+        }
+        #btn-rec {
+            width: 100%; padding: 20px; font-size: 1.1rem;
+            background: var(--primary); color: #fff; border: none;
+            border-radius: var(--radius); cursor: pointer; font-weight: 700;
+        }
+        #btn-rec.recording { background: var(--danger); animation: pulse 0.8s infinite; }
+        #counter {
+            font-size: 2rem; font-weight: 700; text-align: center;
+            margin: 16px 0; color: var(--success);
+        }
+        #log {
+            background: var(--bg); padding: 12px;
+            border-radius: 6px; font-family: monospace;
+            font-size: 0.85rem; max-height: 240px; overflow-y: auto;
+            margin-top: 20px;
+        }
+        .log-entry { padding: 2px 0; }
+        .log-ok  { color: var(--success); }
+        .log-err { color: var(--danger); }
+    </style>
+</head>
+<body>
+    <div class="recorder">
+        <h1>Collect Voice Samples</h1>
+        <p>
+            Record samples through the browser (same recording path the verification uses at runtime).
+            After collecting 8–10 samples, run <code>python training/train_verification.py</code> to retrain.
+        </p>
+
+        <div class="row">
+            <label>Name:</label>
+            <input type="text" id="name" placeholder="e.g. fengshou" value="fengshou">
+        </div>
+        <div class="row">
+            <label>Target:</label>
+            <select id="target">
+                <option value="authorized">Authorized</option>
+                <option value="unauthorized">Unauthorized</option>
+            </select>
+        </div>
+        <div class="row">
+            <label>Duration:</label>
+            <select id="duration">
+                <option value="3">3 seconds (recommended)</option>
+                <option value="4">4 seconds</option>
+                <option value="5">5 seconds</option>
+            </select>
+        </div>
+
+        <div id="counter">Samples saved: 0</div>
+
+        <button id="btn-rec">Click to Record</button>
+
+        <p style="margin-top: 16px; font-size: 0.85rem;">
+            Tips: speak naturally. Vary sentence content each time (e.g., "hello how are you",
+            "the weather is nice today", count numbers). This helps the model learn your voice
+            rather than a specific phrase.
+        </p>
+
+        <div id="log"></div>
+    </div>
+
+    <script>
+        const $name    = document.getElementById("name");
+        const $target  = document.getElementById("target");
+        const $dur     = document.getElementById("duration");
+        const $btn     = document.getElementById("btn-rec");
+        const $counter = document.getElementById("counter");
+        const $log     = document.getElementById("log");
+
+        let count = 0;
+        let recorder = null;
+        let chunks = [];
+        let stream = null;
+
+        function log(msg, cls="") {
+            const div = document.createElement("div");
+            div.className = "log-entry " + cls;
+            const t = new Date().toLocaleTimeString();
+            div.textContent = `[${t}] ${msg}`;
+            $log.appendChild(div);
+            $log.scrollTop = $log.scrollHeight;
+        }
+
+        // ---- Copied from main.js: WebM → WAV 16kHz mono conversion ----
+        async function blobToWav(blob) {
+            const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+            const arrayBuf = await blob.arrayBuffer();
+            const decoded = await audioCtx.decodeAudioData(arrayBuf);
+            audioCtx.close();
+
+            const sampleRate = 16000;
+            const numChannels = 1;
+            const offlineCtx = new OfflineAudioContext(numChannels, decoded.duration * sampleRate, sampleRate);
+            const source = offlineCtx.createBufferSource();
+            source.buffer = decoded;
+            source.connect(offlineCtx.destination);
+            source.start();
+            const resampled = await offlineCtx.startRendering();
+            const pcm = resampled.getChannelData(0);
+
+            const wavBuf = new ArrayBuffer(44 + pcm.length * 2);
+            const view = new DataView(wavBuf);
+            const writeStr = (off, s) => { for (let i = 0; i < s.length; i++) view.setUint8(off + i, s.charCodeAt(i)); };
+            writeStr(0, "RIFF");
+            view.setUint32(4, 36 + pcm.length * 2, true);
+            writeStr(8, "WAVE");
+            writeStr(12, "fmt ");
+            view.setUint32(16, 16, true);
+            view.setUint16(20, 1, true);
+            view.setUint16(22, numChannels, true);
+            view.setUint32(24, sampleRate, true);
+            view.setUint32(28, sampleRate * numChannels * 2, true);
+            view.setUint16(32, numChannels * 2, true);
+            view.setUint16(34, 16, true);
+            writeStr(36, "data");
+            view.setUint32(40, pcm.length * 2, true);
+            for (let i = 0; i < pcm.length; i++) {
+                const s = Math.max(-1, Math.min(1, pcm[i]));
+                view.setInt16(44 + i * 2, s * 0x7FFF, true);
+            }
+            return new Blob([wavBuf], { type: "audio/wav" });
+        }
+
+        async function startRecording() {
+            const durMs = parseInt($dur.value) * 1000;
+            try {
+                // Disable WebRTC DSP for cleaner signal (matches main.js).
+                stream = await navigator.mediaDevices.getUserMedia({
+                    audio: {
+                        echoCancellation: false,
+                        noiseSuppression: false,
+                        autoGainControl: false,
+                    }
+                });
+            } catch (err) {
+                log("Mic access denied: " + err.message, "log-err");
+                return;
+            }
+
+            chunks = [];
+            recorder = new MediaRecorder(stream);
+            recorder.ondataavailable = (ev) => chunks.push(ev.data);
+            recorder.onstop = async () => {
+                stream.getTracks().forEach(t => t.stop());
+                const webmBlob = new Blob(chunks, { type: recorder.mimeType });
+                try {
+                    const wavBlob = await blobToWav(webmBlob);
+                    await uploadSample(wavBlob);
+                } catch (e) {
+                    log("Convert/upload error: " + e.message, "log-err");
+                }
+                $btn.classList.remove("recording");
+                $btn.textContent = "Click to Record";
+                $btn.disabled = false;
+            };
+
+            recorder.start();
+            $btn.classList.add("recording");
+            $btn.disabled = true;
+            log(`Recording... (${durMs/1000}s)`);
+
+            // Countdown display
+            let remain = durMs / 1000;
+            $btn.textContent = `Recording... ${remain.toFixed(1)}s`;
+            const tick = setInterval(() => {
+                remain -= 0.1;
+                if (remain <= 0) { clearInterval(tick); return; }
+                $btn.textContent = `Recording... ${remain.toFixed(1)}s`;
+            }, 100);
+
+            setTimeout(() => {
+                if (recorder && recorder.state === "recording") recorder.stop();
+                clearInterval(tick);
+            }, durMs);
+        }
+
+        async function uploadSample(wavBlob) {
+            const fd = new FormData();
+            fd.append("file", wavBlob, "sample.wav");
+            fd.append("name", $name.value.trim() || "anon");
+            fd.append("target", $target.value);
+            const resp = await fetch("/api/collect_sample", { method: "POST", body: fd });
+            const result = await resp.json();
+            if (result.success) {
+                count++;
+                $counter.textContent = `Samples saved: ${count}`;
+                log("Saved: " + result.filename, "log-ok");
+            } else {
+                log("Upload failed: " + (result.error || "unknown"), "log-err");
+            }
+        }
+
+        $btn.addEventListener("click", startRecording);
+    </script>
+</body>
+</html>

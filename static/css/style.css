@@ -26,20 +26,25 @@ body {
     font-family: 'Segoe UI', system-ui, -apple-system, sans-serif;
     background: var(--bg);
     color: var(--text);
-    min-height: 100vh;
+    height: 100vh;
     display: flex;
-    flex-direction: column;
+    flex-direction: row;
+    flex-wrap: wrap;
+    align-content: flex-start;
+    overflow: hidden;
 }
 
 /* ---- Header ---- */
 
 header {
+    width: 100%;
     background: var(--surface);
-    padding: 14px 24px;
+    padding: 10px 24px;
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-bottom: 2px solid var(--accent);
+    flex-shrink: 0;
 }
 
 header h1 {
@@ -70,10 +75,12 @@ header h1 {
 
 main {
     flex: 1;
-    padding: 24px;
-    max-width: 800px;
-    margin: 0 auto;
-    width: 100%;
+    padding: 20px;
+    overflow-y: auto;
+    min-width: 0;
+    height: calc(100vh - 50px);
+    display: flex;
+    flex-direction: column;
 }
 
 /* ---- Panels (show/hide based on state) ---- */
@@ -83,11 +90,27 @@ main {
     background: var(--surface);
     border-radius: var(--radius);
     padding: 24px;
-    margin-bottom: 20px;
 }
 
 .panel.active {
     display: block;
+}
+
+#panel-verify.active,
+#panel-wake.active {
+    margin: auto;
+    max-width: 640px;
+    padding: 36px;
+}
+
+#panel-pipeline.active {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+}
+
+#panel-pipeline.active #pipeline-columns {
+    flex: 1;
 }
 
 .panel h2 {
@@ -108,7 +131,7 @@ main {
     flex-wrap: wrap;
     gap: 12px;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 36px;
 }
 
 .bypass-group {
@@ -150,23 +173,69 @@ main {
 .btn-action:active { opacity: 0.7; }
 .btn-action:disabled { opacity: 0.4; cursor: not-allowed; }
 
+/* ---- Bypass Panel ---- */
+
+#bypass-panel {
+    margin-top: 12px;
+    padding: 12px;
+    background: var(--surface-light);
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+}
+
+#bypass-panel summary {
+    cursor: pointer;
+    color: var(--text-muted);
+    font-size: 0.85rem;
+}
+
+.bypass-intent-form {
+    margin-top: 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.bypass-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.bypass-row label {
+    min-width: 80px;
+    font-size: 0.85rem;
+    color: var(--text-muted);
+    text-align: right;
+}
+
+.bypass-row input,
+.bypass-row select {
+    flex: 1;
+    padding: 8px 12px;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 0.9rem;
+}
+
 /* ---- Mic Button ---- */
 
 .btn-mic {
-    width: 80px;
-    height: 80px;
+    width: 100px;
+    height: 100px;
     border-radius: 50%;
     border: 3px solid var(--primary);
     background: var(--surface-light);
     color: var(--text);
     cursor: pointer;
     display: flex;
-    flex-direction: column;
     align-items: center;
     justify-content: center;
-    gap: 2px;
     transition: all 0.2s;
     flex-shrink: 0;
+    position: relative;
 }
 
 .btn-mic:hover {
@@ -179,14 +248,24 @@ main {
     animation: pulse 0.8s infinite;
 }
 
+.btn-mic.recording .mic-label {
+    font-weight: 700;
+    color: var(--primary);
+}
+
 .mic-icon {
-    font-size: 1.6rem;
+    font-size: 2rem;
 }
 
 .mic-label {
-    font-size: 0.55rem;
+    position: absolute;
+    bottom: -22px;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.7rem;
     text-transform: uppercase;
     letter-spacing: 0.5px;
+    white-space: nowrap;
 }
 
 /* ---- NLG Toggle ---- */
@@ -294,7 +373,7 @@ main {
     background: var(--surface-light);
     border-radius: var(--radius);
     padding: 20px;
-    margin-top: 20px;
+    height: 100%;
 }
 
 #pet-header {
@@ -311,8 +390,8 @@ main {
 
 #doro-canvas-wrapper {
     width: 100%;
-    max-width: 300px;
-    height: 300px;
+    max-width: 420px;
+    height: 400px;
     margin: 0 auto 16px;
 }
 
@@ -368,14 +447,11 @@ main {
     text-align: right;
 }
 
-/* ---- Chat Log (sidebar on wider screens) ---- */
+/* ---- Chat Log ---- */
 
 #chat-log {
     background: var(--surface);
     padding: 16px;
-    border-top: 2px solid var(--accent);
-    max-height: 250px;
-    overflow-y: auto;
 }
 
 #chat-log h3 {
@@ -404,28 +480,145 @@ main {
     background: var(--surface-light);
 }
 
+/* ---- Three-column pipeline layout ---- */
+
+#pipeline-columns {
+    display: flex;
+    gap: 20px;
+    align-items: stretch;
+}
+
+#col-left {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+#col-center {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    padding: 0 8px;
+}
+
+#col-right {
+    flex: 1;
+    min-width: 0;
+}
+
+/* ---- Timer Panel ---- */
+
+#timer-panel {
+    background: var(--surface-light);
+    border-radius: var(--radius);
+    padding: 16px;
+    margin-top: auto;
+    border-top: 1px solid var(--accent);
+    text-align: center;
+}
+
+#timer-panel h3 {
+    font-size: 1rem;
+    margin-bottom: 12px;
+}
+
+#timer-inputs {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 12px;
+}
+
+.timer-field input {
+    width: 50px;
+    padding: 6px;
+    text-align: center;
+    border-radius: 6px;
+    border: 1px solid var(--accent);
+    background: var(--bg);
+    color: var(--text);
+    font-size: 1.1rem;
+}
+
+.timer-field label {
+    font-size: 0.75rem;
+    color: var(--text-muted);
+    display: block;
+}
+
+.timer-colon {
+    font-size: 1.3rem;
+    font-weight: bold;
+    padding-bottom: 14px;
+}
+
+#timer-buttons {
+    display: flex;
+    gap: 8px;
+    justify-content: center;
+    margin-bottom: 12px;
+}
+
+#timer-buttons .btn-action {
+    padding: 6px 14px;
+    font-size: 0.8rem;
+}
+
+#timer-display {
+    font-size: 2.5rem;
+    font-weight: 700;
+    font-family: 'Cascadia Code', 'Fira Code', monospace;
+    color: var(--success);
+}
+
+#timer-display.urgent {
+    color: var(--warning);
+    animation: pulse 0.5s infinite;
+}
+
+#timer-display.done {
+    color: var(--danger);
+}
+
+/* ---- Chat Log as sidebar ---- */
+
+#chat-log {
+    width: 280px;
+    border-top: none;
+    border-left: 2px solid var(--accent);
+    max-height: none;
+    overflow-y: auto;
+    flex-shrink: 0;
+}
+
 /* ---- Responsive ---- */
 
-@media (min-width: 1000px) {
+@media (max-width: 900px) {
     body {
-        flex-direction: row;
-        flex-wrap: wrap;
+        flex-direction: column;
+        height: auto;
+        overflow: auto;
     }
 
-    header {
+    #pipeline-columns {
+        flex-direction: column;
+    }
+
+    #col-center {
+        padding: 12px 0;
+    }
+
+    #col-right {
         width: 100%;
     }
 
-    main {
-        flex: 1;
-        max-width: 700px;
-    }
-
     #chat-log {
-        width: 300px;
-        border-top: none;
-        border-left: 2px solid var(--accent);
-        max-height: none;
-        overflow-y: auto;
+        width: 100%;
+        border-left: none;
+        border-top: 2px solid var(--accent);
+        max-height: 250px;
     }
 }

@@ -55,6 +55,28 @@ def _template_set_timer(intent_data, api_response):
 
 def _template_weather(intent_data, api_response):
     city = api_response.get("city", "your location")
+    error = api_response.get("error")
+
+    # City not found — the most common failure, worth a distinct apology
+    if error == "city_not_found":
+        templates = [
+            f"Sorry, I couldn't find a city called {city} in the weather service.",
+            f"I couldn't find weather data for {city}. Please try another city name.",
+            f"Sorry, I wasn't able to match {city} to a valid city for weather lookup.",
+        ]
+        return random.choice(templates)
+
+    # Other service failures (network, bad key, bad payload)
+    if error in {"request_failed", "service_error", "invalid_response", "missing_api_key"}:
+        message = api_response.get("message")
+        templates = [
+            message or f"Sorry, I couldn't get the weather for {city} right now.",
+            f"Sorry, the weather service is unavailable right now, so I can't check {city} at the moment.",
+            f"I couldn't retrieve the weather for {city} just now. Please try again in a moment.",
+        ]
+        return random.choice(templates)
+
+    # Happy path
     temp = api_response.get("temperature", "N/A")
     description = api_response.get("description", "unknown conditions")
     wind = api_response.get("windspeed", "N/A")
@@ -174,15 +196,15 @@ def _template_get_upcoming_movies(intent_data, api_response):
 # --- Pet intents ---
 
 def _pet_status_str(status):
-    """Format pet status bars as a short summary."""
+    """Format pet status bars as a short, speech-friendly summary."""
     if not status:
         return ""
     parts = []
     for attr in ["hunger", "happiness", "energy", "cleanliness"]:
         val = status.get(attr)
         if val is not None:
-            parts.append(f"{attr}: {val}/100")
-    return " | ".join(parts)
+            parts.append(f"{attr} {val}")
+    return ", ".join(parts) + " out of one hundred"
 
 
 def _template_feed_pet(intent_data, api_response):
@@ -194,10 +216,10 @@ def _template_feed_pet(intent_data, api_response):
         f"{name} happily ate the {food}!",
         f"Feeding time! {name} enjoyed the {food}.",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_play_with_pet(intent_data, api_response):
@@ -209,10 +231,10 @@ def _template_play_with_pet(intent_data, api_response):
         f"{name} had a great time playing with the {toy}!",
         f"Play time with {name} and the {toy}!",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_pet_the_cat(intent_data, api_response):
@@ -223,10 +245,10 @@ def _template_pet_the_cat(intent_data, api_response):
         f"{name} loves the attention! Purr purr.",
         f"You petted {name}. {name} is so happy!",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_wash_pet(intent_data, api_response):
@@ -237,10 +259,10 @@ def _template_wash_pet(intent_data, api_response):
         f"{name} is squeaky clean after that bath!",
         f"Bath time is over. {name} looks fresh and clean!",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_put_to_sleep(intent_data, api_response):
@@ -252,10 +274,10 @@ def _template_put_to_sleep(intent_data, api_response):
         f"Shh... {name} is taking a nap for {duration}.",
         f"Goodnight {name}! Sleeping for {duration}.",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_wake_up_pet(intent_data, api_response):
@@ -266,10 +288,10 @@ def _template_wake_up_pet(intent_data, api_response):
         f"Good morning {name}! Rise and shine!",
         f"You woke up {name}. {name} stretches and yawns.",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_give_treat(intent_data, api_response):
@@ -281,10 +303,10 @@ def _template_give_treat(intent_data, api_response):
         f"{name} happily munched on the {treat}!",
         f"Treat time! {name} devoured the {treat}.",
     ]
-    result = random.choice(templates)
-    if status:
-        result += f"\nStatus: {_pet_status_str(status)}"
-    return result
+    # Note: pet status is displayed in the UI's side panel (stat bars), so we
+    # don't append it to the spoken text — keeps TTS clean. If you want the
+    # spoken status back later, toggle via a NLG option.
+    return random.choice(templates)
 
 
 def _template_check_status(intent_data, api_response):
@@ -370,21 +392,37 @@ def _load_llm():
     return _llm_cache["model"], _llm_cache["tokenizer"]
 
 
+ROLE_MAP = {
+    "weather": "a weather assistant",
+    "get_movie_cast": "a movie assistant",
+    "get_similar_movies": "a movie assistant",
+    "get_movie_plot": "a movie assistant",
+    "get_movies_by_genre": "a movie assistant",
+    "get_movie_rating": "a movie assistant",
+    "get_movie_director": "a movie assistant",
+    "get_trending_movies": "a movie assistant",
+    "get_upcoming_movies": "a movie assistant",
+    "feed_pet": "a virtual pet caretaker",
+    "play_with_pet": "a virtual pet caretaker",
+    "pet_the_cat": "a virtual pet caretaker",
+    "wash_pet": "a virtual pet caretaker",
+    "put_to_sleep": "a virtual pet caretaker",
+    "wake_up_pet": "a virtual pet caretaker",
+    "give_treat": "a virtual pet caretaker",
+    "check_status": "a virtual pet caretaker",
+    "rename_pet": "a virtual pet caretaker",
+    "set_timer": "a helpful assistant",
+    "greetings": "a friendly assistant",
+    "goodbye": "a friendly assistant",
+}
+
+
 def _build_prompt(intent_data, api_response):
-    """Build a prompt that instructs the LLM to generate a natural language response."""
+    """Build a prompt following professor's recommended style."""
     intent = intent_data.get("intent", "unknown")
-    slots = intent_data.get("slots", {})
+    role = ROLE_MAP.get(intent, "a helpful assistant")
 
-    prompt = (
-        f"The user asked about '{intent}'"
-    )
-    if slots:
-        slot_str = ", ".join(f"{k}={v}" for k, v in slots.items())
-        prompt += f" with parameters: {slot_str}"
-    prompt += ".\n"
-
-    prompt += f"The system returned this data: {api_response}\n"
-    prompt += "Write a short, friendly response to the user:\n"
+    prompt = f"You are {role}. Write a complete sentence from the following data: {api_response}\nResponse:"
     return prompt
 
 
@@ -423,8 +461,81 @@ def _generate_llm(intent_data, api_response):
 # Public interface
 # ---------------------------------------------------------------------------
 
+# ---------------------------------------------------------------------------
+# Emotion derivation  (NLG decides HOW the answer should sound, then TTS renders)
+# ---------------------------------------------------------------------------
+
+INTENT_TO_EMOTION = {
+    "greetings":         "happy",
+    "goodbye":           "calm",
+    "oos":               "apologetic",
+    "set_timer":         "neutral",
+    "weather":           "neutral",
+    "get_movie_cast":    "excited",
+    "get_similar_movies":"neutral",
+    "get_movie_plot":    "calm",
+    "get_movie_rating":  "neutral",
+    "get_movie_director":"neutral",
+    "get_movies_by_genre":"neutral",
+    "get_trending_movies":"excited",
+    "get_upcoming_movies":"excited",
+    "feed_pet":          "happy",
+    "play_with_pet":     "excited",
+    "pet_the_cat":       "calm",
+    "wash_pet":          "calm",
+    "put_to_sleep":      "calm",
+    "wake_up_pet":       "happy",
+    "give_treat":        "happy",
+    "check_status":      "neutral",
+    "rename_pet":        "happy",
+}
+
+# Expected key in api_response — if missing/empty it's a soft failure (apologetic)
+EXPECTED_DATA_KEY = {
+    "weather":            "temperature",
+    "get_movie_cast":     "cast",
+    "get_similar_movies": "similar",
+    "get_movie_plot":     "plot",
+    "get_movie_rating":   "rating",
+    "get_movie_director": "director",
+    "get_movies_by_genre": "movies",
+    "get_trending_movies": "movies",
+    "get_upcoming_movies": "movies",
+}
+
+
+def _derive_emotion(intent, api_response):
+    """Three-tier emotion selection.
+
+    1. Hard failure (fulfillment raised, caught in app.py with type='error')
+    2. Soft failure (API returned but expected data field empty/missing)
+    3. Normal — static intent → emotion table
+    """
+    # Tier 1 — hard failure
+    if api_response.get("type") == "error":
+        return "apologetic"
+
+    # Tier 2 — soft failure
+    key = EXPECTED_DATA_KEY.get(intent)
+    if key is not None:
+        val = api_response.get(key)
+        if not val or val == "N/A":
+            return "apologetic"
+    if intent == "set_timer":
+        dur = api_response.get("duration", -1)
+        if dur in (-1, 0, None):
+            return "apologetic"
+
+    # Tier 3 — normal path
+    return INTENT_TO_EMOTION.get(intent, "neutral")
+
+
+# ---------------------------------------------------------------------------
+# Public interface
+# ---------------------------------------------------------------------------
+
 def process(intent_data, api_response, method="template"):
-    """Generate a natural language response.
+    """Generate a natural language response + emotion tag.
 
     Args:
         intent_data: dict with "intent" (str) and "slots" (dict).
@@ -432,17 +543,24 @@ def process(intent_data, api_response, method="template"):
         method: "template" for rule-based, "llm" for model-based generation.
 
     Returns:
-        str — the generated natural language response.
+        dict with keys "text" (str) and "emotion" (one of:
+        happy, excited, calm, apologetic, neutral).
+
+        NLG owns the emotion decision because the semantic context (which intent,
+        whether the fulfillment succeeded, whether the data was found) lives here.
+        TTS consumes this tag to render prosody.
     """
     if api_response is None:
         api_response = {}
 
     if method == "llm":
         try:
-            return _generate_llm(intent_data, api_response)
+            text = _generate_llm(intent_data, api_response)
         except Exception as e:
-            # Fall back to template if LLM fails
             print(f"LLM generation failed ({e}), falling back to template.")
-            return _generate_template(intent_data, api_response)
+            text = _generate_template(intent_data, api_response)
     else:
-        return _generate_template(intent_data, api_response)
+        text = _generate_template(intent_data, api_response)
+
+    emotion = _derive_emotion(intent_data.get("intent", ""), api_response)
+    return {"text": text, "emotion": emotion}

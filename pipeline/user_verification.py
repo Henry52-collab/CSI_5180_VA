@@ -25,7 +25,14 @@ WINDOW_SEC = 0.025
 HOP_SEC = 0.010
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-MODEL_PATH = os.path.join(BASE_DIR, "models", "user_verify_svm.pkl")
+
+# Select which trained model to use:
+#   user_verify_svm.pkl     — v1: mean + std MFCC (original)
+#   user_verify_svm_v2.pkl  — v2: std + Δ-std + ΔΔ-std (channel-invariant features)
+#   user_verify_svm_v3.pkl  — v3: v1 features + channel augmentations
+#   user_verify_svm_v4.pkl  — v4: v2 features + channel augmentations
+MODEL_PATH = os.path.join(BASE_DIR, "models",
+                          os.getenv("VERIFY_MODEL", "user_verify_svm.pkl"))
 
 # Bypass passcode — change this to your team's chosen code
 PASSCODE = "atlas123"
@@ -35,27 +42,68 @@ THRESHOLD = 0.5
 
 
 # ---------------------------------------------------------------------------
-# Feature extraction (same as training)
+# Feature extraction — dispatch by model version
 # ---------------------------------------------------------------------------
-def _extract_features(audio, sr=TARGET_SR):
-    """Extract mean+std MFCC feature vector from a numpy audio array."""
+def _pad_or_trim(audio):
     if len(audio) < NUM_SAMPLES:
-        audio = np.pad(audio, (0, NUM_SAMPLES - len(audio)))
-    else:
-        audio = audio[:NUM_SAMPLES]
+        return np.pad(audio, (0, NUM_SAMPLES - len(audio)))
+    return audio[:NUM_SAMPLES]
 
+
+def _extract_features_v1(audio, sr):
+    """V1: mean + std MFCC = 40 dims."""
+    audio = _pad_or_trim(audio)
     n_fft = int(WINDOW_SEC * sr)
     hop_length = int(HOP_SEC * sr)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC,
+                                n_fft=n_fft, hop_length=hop_length)
+    return np.concatenate([np.mean(mfcc, axis=1), np.std(mfcc, axis=1)])
 
-    mfcc = librosa.feature.mfcc(
-        y=audio, sr=sr,
-        n_mfcc=N_MFCC,
-        n_fft=n_fft,
-        hop_length=hop_length,
-    )
-    mean = np.mean(mfcc, axis=1)
-    std = np.std(mfcc, axis=1)
-    return np.concatenate([mean, std])
+
+def _extract_features_v2(audio, sr):
+    """V2/V4: std + delta-std + delta2-std = 60 dims."""
+    audio = _pad_or_trim(audio)
+    n_fft = int(WINDOW_SEC * sr)
+    hop_length = int(HOP_SEC * sr)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC,
+                                n_fft=n_fft, hop_length=hop_length)
+    delta = librosa.feature.delta(mfcc, order=1)
+    delta2 = librosa.feature.delta(mfcc, order=2)
+    return np.concatenate([np.std(mfcc, axis=1),
+                           np.std(delta, axis=1),
+                           np.std(delta2, axis=1)])
+
+
+def _extract_features_v5(audio, sr):
+    """V5: mean + std + delta-std + delta2-std = 80 dims."""
+    audio = _pad_or_trim(audio)
+    n_fft = int(WINDOW_SEC * sr)
+    hop_length = int(HOP_SEC * sr)
+    mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC,
+                                n_fft=n_fft, hop_length=hop_length)
+    delta = librosa.feature.delta(mfcc, order=1)
+    delta2 = librosa.feature.delta(mfcc, order=2)
+    return np.concatenate([np.mean(mfcc, axis=1),
+                           np.std(mfcc, axis=1),
+                           np.std(delta, axis=1),
+                           np.std(delta2, axis=1)])
+
+
+_FEATURE_EXTRACTORS = {
+    "v1": _extract_features_v1,
+    "v2": _extract_features_v2,
+    "v3": _extract_features_v1,  # v3 uses v1 features, just more augmentation
+    "v4": _extract_features_v2,
+    "v5": _extract_features_v5,
+    "v6": _extract_features_v5,  # v6/v7 use v5 features, just more aggressive aug
+    "v7": _extract_features_v5,
+}
+
+
+def _extract_features(audio, sr=TARGET_SR):
+    """Dispatch to correct feature extractor based on loaded model version."""
+    version = _model_cache.get("version", "v1")
+    return _FEATURE_EXTRACTORS[version](audio, sr)
 
 
 # ---------------------------------------------------------------------------
@@ -75,6 +123,9 @@ def _load_model():
             data = pickle.load(f)
         _model_cache["svm"] = data["svm"]
         _model_cache["scaler"] = data["scaler"]
+        _model_cache["version"] = data.get("version", "v1")
+        print(f"[Verify] Loaded model: {os.path.basename(MODEL_PATH)} "
+              f"(version={_model_cache['version']})")
     return _model_cache["svm"], _model_cache["scaler"]
 
 

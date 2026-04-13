@@ -8,48 +8,133 @@ class WeatherAPIModule():
         load_dotenv()
         self.OPENWEATHER_API_KEY = os.getenv('OPENWEATHER_API_KEY')
 
-    def get_coordinates(self, city, country=None):
-        q = f"{city}"
+    def _ok(self, **data):
+        return {"ok": True, **data}
 
+    def _error(self, error, message, **data):
+        return {"ok": False, "error": error, "message": message, **data}
+
+    def get_coordinates(self, city, country=None):
+        if not self.OPENWEATHER_API_KEY:
+            return self._error(
+                "missing_api_key",
+                "Weather service is not configured.",
+                city=city,
+                country=country,
+            )
+
+        q = f"{city}"
         if country is not None:
             q += f",{country}"
 
-        params = {}
-        params["appid"] = self.OPENWEATHER_API_KEY
-        params["q"] = q
-        params["limit"] = 1
-
+        params = {
+            "appid": self.OPENWEATHER_API_KEY,
+            "q": q,
+            "limit": 1,
+        }
         headers = {"accept": "application/json"}
-        url = f"http://api.openweathermap.org/geo/1.0/direct"
+        url = "https://api.openweathermap.org/geo/1.0/direct"
 
-        response = requests.get(url, params=params, headers=headers)
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=10)
+        except requests.RequestException:
+            return self._error(
+                "request_failed",
+                "I couldn't reach the weather service right now.",
+                city=city,
+                country=country,
+            )
 
         if response.status_code != 200:
-            return None
-        result = response.json()
-        lat = result[0]['lat']
-        lon = result[0]['lon']
-        return (lat, lon)
-    
+            return self._error(
+                "service_error",
+                "The weather service returned an unexpected response.",
+                city=city,
+                country=country,
+                status_code=response.status_code,
+            )
+
+        try:
+            result = response.json()
+        except ValueError:
+            return self._error(
+                "invalid_response",
+                "The weather service returned unreadable data.",
+                city=city,
+                country=country,
+            )
+
+        if not result:
+            return self._error(
+                "city_not_found",
+                f"I couldn't find weather data for {city}.",
+                city=city,
+                country=country,
+            )
+
+        location = result[0]
+        lat = location.get("lat")
+        lon = location.get("lon")
+        if lat is None or lon is None:
+            return self._error(
+                "invalid_response",
+                "The weather service did not return valid coordinates.",
+                city=city,
+                country=country,
+            )
+
+        return self._ok(
+            lat=lat,
+            lon=lon,
+            city=location.get("name", city),
+            country=location.get("country", country),
+        )
+
     def get_weather(self, city, country=None):
+        coords = self.get_coordinates(city, country)
+        if not coords.get("ok"):
+            return coords
 
-        lat, lon = self.get_coordinates(city, country)
-        params = {}
-        params["appid"] = self.OPENWEATHER_API_KEY
-        params["lat"] = lat
-        params["lon"] = lon
-        params["units"] = "metric"
+        params = {
+            "appid": self.OPENWEATHER_API_KEY,
+            "lat": coords["lat"],
+            "lon": coords["lon"],
+            "units": "metric",
+        }
         headers = {"accept": "application/json"}
-        url = f"http://api.openweathermap.org/data/2.5/weather"
+        url = "https://api.openweathermap.org/data/2.5/weather"
 
-        response = requests.get(url, params=params, headers=headers)
-
-        print(response.json())
+        try:
+            response = requests.get(url, params=params, headers=headers, timeout=10)
+        except requests.RequestException:
+            return self._error(
+                "request_failed",
+                "I couldn't reach the weather service right now.",
+                city=coords.get("city", city),
+                country=coords.get("country", country),
+            )
 
         if response.status_code != 200:
-            return None
-        result = response.json()
+            return self._error(
+                "service_error",
+                "The weather service returned an unexpected response.",
+                city=coords.get("city", city),
+                country=coords.get("country", country),
+                status_code=response.status_code,
+            )
 
-        return result
+        try:
+            result = response.json()
+        except ValueError:
+            return self._error(
+                "invalid_response",
+                "The weather service returned unreadable data.",
+                city=coords.get("city", city),
+                country=coords.get("country", country),
+            )
 
-
+        return self._ok(
+            city=coords.get("city", city),
+            country=coords.get("country", country),
+            data=result,
+        )

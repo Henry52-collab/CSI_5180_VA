@@ -4,6 +4,7 @@ requests
 torch
 transformers
 openai-whisper
+openai
 librosa
 scikit-learn
 seqeval
@@ -13,5 +14,3 @@ playsound3
 sounddevice
 soundfile
 numpy
-openai-whisper
-pyttsx3

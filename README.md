@@ -27,9 +27,32 @@ User Verification → Wake Word → ASR → Intent Detection → Fulfillment →
 
 ```bash
 pip install -r requirements.txt
-cp .env.example .env   # fill in API keys
+python bootstrap.py    # one-time: downloads ~1GB of ML models (Whisper + DistilBERT + distilgpt2)
+cp .env.example .env   # fill in API keys (TMDB, OpenWeather, OpenAI)
 python app.py
 ```
+
+Then open http://localhost:5000 in Chrome.
+
+### Notes on `bootstrap.py`
+
+This script pre-downloads every ML model Atlas uses. It's optional — `app.py`
+will also download on first run — but running `bootstrap.py` first gives you
+a clean progress log and keeps `app.py` startup instant afterward.
+
+Cache locations:
+- Whisper: `~/.cache/whisper/`
+- Hugging Face models: `~/.cache/huggingface/`
+
+### API keys (`.env`)
+
+| Key | Required for | Free tier |
+|-----|--------------|-----------|
+| `TMDB_API_KEY` | Movie intents | yes |
+| `OPENWEATHER_API_KEY` | Weather intent | yes |
+| `OPENAI_API_KEY` | OpenAI TTS backend | pay-per-use (~$0.001 per response) |
+
+Without `OPENAI_API_KEY`, Atlas falls back to the local `pyttsx3` TTS backend.
 
 ## Pretrained Models
 

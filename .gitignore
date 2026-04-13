@@ -34,3 +34,6 @@ data/wake_word/
 
 # Node
 node_modules/
+
+# Test artifacts
+test_verify_result.txt
