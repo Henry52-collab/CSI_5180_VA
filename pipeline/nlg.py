@@ -44,11 +44,12 @@ def _template_oos(intent_data, api_response):
 
 
 def _template_set_timer(intent_data, api_response):
+    duration_str = api_response.get("duration_str", "unknown")
     duration = api_response.get("duration", "unknown")
     templates = [
-        f"Timer set for {duration}.",
-        f"Got it! I've started a {duration} timer.",
-        f"Your timer for {duration} is now running.",
+        f"Timer set for {duration_str}.",
+        f"Got it! I've started a {duration_str} timer.",
+        f"Your timer for {duration_str} is now running.",
     ]
     return random.choice(templates)
 
