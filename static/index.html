@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Atlas VA</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="/static/css/style.css">
 
     <!-- Three.js for 3D pet model -->
@@ -17,217 +18,269 @@
     </script>
 </head>
 <body>
+    <!-- Ambient background orbs -->
+    <div class="ambient-bg"></div>
+    <div class="ambient-bg-2"></div>
+
     <!-- ============================================================ -->
     <!-- Top Bar                                                       -->
     <!-- ============================================================ -->
     <header id="header">
-        <h1>Atlas VA</h1>
+        <div class="logo-area">
+            <div class="logo-icon"></div>
+            <h1>Atlas VA</h1>
+        </div>
         <div id="status-badge">LOCKED</div>
     </header>
 
     <!-- ============================================================ -->
-    <!-- Main Content                                                  -->
+    <!-- App Container (main + sidebar)                               -->
     <!-- ============================================================ -->
-    <main>
-        <!-- ---- Step 1: Verification ---- -->
-        <section id="panel-verify" class="panel active">
-            <h2>Step 1: Verify Your Identity</h2>
-            <p>Record your voice or enter the bypass passcode.</p>
-            <div class="controls">
-                <button id="btn-verify-mic" class="btn-mic" title="Hold to record">
-                    <span class="mic-icon">&#127908;</span>
-                    <span class="mic-label">Click to Record</span>
-                </button>
-                <div class="bypass-group">
-                    <input type="text" id="input-verify" placeholder="Bypass passcode" />
-                    <button id="btn-verify-bypass" class="btn-action">Submit</button>
-                </div>
-            </div>
-            <div id="verify-result" class="result-box"></div>
-        </section>
-
-        <!-- ---- Step 2: Wake Word ---- -->
-        <section id="panel-wake" class="panel">
-            <h2>Step 2: Wake Word</h2>
-            <p>Say That Words!</p>
-            <div class="controls">
-                <button id="btn-wake-mic" class="btn-mic" title="Click to record">
-                    <span class="mic-icon">&#127908;</span>
-                    <span class="mic-label">Click to Record</span>
-                </button>
-                <div class="bypass-group">
-                    <input type="text" id="input-wake" placeholder="Type wake word..." />
-                    <button id="btn-wake-bypass" class="btn-action">Submit</button>
-                </div>
-            </div>
-            <div id="wake-result" class="result-box"></div>
-        </section>
-
-        <!-- ---- Step 3: Pipeline (main interaction) ---- -->
-        <section id="panel-pipeline" class="panel">
-            <h2>Talk to Atlas</h2>
-
-            <!-- Pipeline progress -->
-            <div id="pipeline-progress">
-                <span class="step" data-step="asr">ASR</span>
-                <span class="arrow">&rarr;</span>
-                <span class="step" data-step="intent">Intent</span>
-                <span class="arrow">&rarr;</span>
-                <span class="step" data-step="fulfillment">Fulfill</span>
-                <span class="arrow">&rarr;</span>
-                <span class="step" data-step="nlg">NLG</span>
-            </div>
-
-            <!-- Three-column layout -->
-            <div id="pipeline-columns">
-                <!-- ===== LEFT COLUMN: Interaction + Timer ===== -->
-                <div id="col-left">
-                    <div class="controls">
-                        <div class="bypass-group">
-                            <input type="text" id="input-pipeline" placeholder="Type your request..." />
-                            <button id="btn-pipeline-bypass" class="btn-action">Send</button>
-                        </div>
-                        <div class="nlg-toggle">
-                            <label for="nlg-method">NLG:</label>
-                            <select id="nlg-method">
-                                <option value="template">Template</option>
-                                <option value="llm">LLM (SmolLM2-360M-Instruct)</option>
-                            </select>
-                        </div>
-                        <div class="nlg-toggle">
-                            <label for="tts-backend">TTS:</label>
-                            <select id="tts-backend">
-                                <option value="pyttsx3">Local (pyttsx3)</option>
-                                <option value="openai" selected>Neural (OpenAI)</option>
-                            </select>
-                        </div>
-                    </div>
-
-                    <!-- Intent/Slot Bypass -->
-                    <details id="bypass-panel">
-                        <summary>Intent Bypass (skip ASR + Intent Detection)</summary>
-                        <div class="bypass-intent-form">
-                            <div class="bypass-row">
-                                <label for="bypass-intent">Intent:</label>
-                                <select id="bypass-intent">
-                                    <optgroup label="Basic">
-                                        <option value="greetings">Greetings</option>
-                                        <option value="goodbye">Goodbye</option>
-                                        <option value="oos">Out of Scope</option>
-                                        <option value="set_timer">Set Timer</option>
-                                        <option value="weather">Weather</option>
-                                    </optgroup>
-                                    <optgroup label="Movie">
-                                        <option value="get_movie_cast">Get Movie Cast</option>
-                                        <option value="get_similar_movies">Get Similar Movies</option>
-                                        <option value="get_movie_plot">Get Movie Plot</option>
-                                        <option value="get_movies_by_genre">Get Movies by Genre</option>
-                                        <option value="get_movie_rating">Get Movie Rating</option>
-                                        <option value="get_movie_director">Get Movie Director</option>
-                                        <option value="get_trending_movies">Get Trending Movies</option>
-                                        <option value="get_upcoming_movies">Get Upcoming Movies</option>
-                                    </optgroup>
-                                    <optgroup label="Pet">
-                                        <option value="feed_pet">Feed Pet</option>
-                                        <option value="play_with_pet">Play with Pet</option>
-                                        <option value="pet_the_cat">Pet the Cat</option>
-                                        <option value="wash_pet">Wash Pet</option>
-                                        <option value="put_to_sleep">Put to Sleep</option>
-                                        <option value="wake_up_pet">Wake Up Pet</option>
-                                        <option value="give_treat">Give Treat</option>
-                                        <option value="check_status">Check Status</option>
-                                        <option value="rename_pet">Rename Pet</option>
-                                    </optgroup>
-                                </select>
-                            </div>
-                            <div id="bypass-slots"></div>
-                            <button id="btn-bypass-submit" class="btn-action">Submit Bypass</button>
-                        </div>
-                    </details>
-
-                    <!-- Response display -->
-                    <div id="pipeline-response" class="result-box">
-                        <div id="response-answer"></div>
-                        <details id="response-details">
-                            <summary>Details</summary>
-                            <pre id="response-json"></pre>
-                        </details>
-                    </div>
-
-                    <!-- Timer (below interaction) -->
-                    <div id="timer-panel">
-                        <h3>&#9201; Timer</h3>
-                        <div id="timer-inputs">
-                            <div class="timer-field">
-                                <input type="number" id="timer-min" min="0" max="99" value="0">
-                                <label>min</label>
-                            </div>
-                            <span class="timer-colon">:</span>
-                            <div class="timer-field">
-                                <input type="number" id="timer-sec" min="0" max="59" value="5">
-                                <label>sec</label>
-                            </div>
-                        </div>
-                        <div id="timer-buttons">
-                            <button id="timer-start" class="btn-action">&#9654; Start</button>
-                            <button id="timer-pause" class="btn-action">&#9208; Pause</button>
-                            <button id="timer-reset" class="btn-action">&#8634; Reset</button>
-                        </div>
-                        <div id="timer-display">00:05</div>
-                    </div>
-                </div>
-
-                <!-- ===== CENTER: Record Button ===== -->
-                <div id="col-center">
-                    <button id="btn-pipeline-mic" class="btn-mic" title="Click to record">
+    <div class="app-container">
+        <main>
+            <!-- ---- Step 1: Verification ---- -->
+            <section id="panel-verify" class="panel active glass-panel">
+                <div class="panel-icon">🔐</div>
+                <h2>Verify Your Identity</h2>
+                <p>Record your voice or enter the bypass passcode.</p>
+                <div class="controls">
+                    <button id="btn-verify-mic" class="btn-mic" title="Click to record">
                         <span class="mic-icon">&#127908;</span>
                         <span class="mic-label">Click to Record</span>
                     </button>
+                    <div class="bypass-group">
+                        <input type="password" id="input-verify" placeholder="Bypass passcode" />
+                        <button id="btn-verify-bypass" class="btn-action primary-gradient">Unlock</button>
+                    </div>
+                </div>
+                <div id="verify-result" class="result-box"></div>
+            </section>
+
+            <!-- ---- Step 2: Wake Word ---- -->
+            <section id="panel-wake" class="panel glass-panel">
+                <div class="panel-icon">🎙️</div>
+                <h2>Awaiting Wake Word</h2>
+                <p>Say "Hey Atlas" to wake the assistant.</p>
+                <div class="controls">
+                    <button id="btn-wake-mic" class="btn-mic" title="Click to record">
+                        <span class="mic-icon">&#127908;</span>
+                        <span class="mic-label">Click to Record</span>
+                    </button>
+                    <div class="bypass-group">
+                        <input type="text" id="input-wake" placeholder="Type wake word..." />
+                        <button id="btn-wake-bypass" class="btn-action primary-gradient">Wake</button>
+                    </div>
+                </div>
+                <div id="wake-result" class="result-box"></div>
+            </section>
+
+            <!-- ---- Step 3: Pipeline (main interaction) ---- -->
+            <section id="panel-pipeline" class="panel">
+
+                <!-- Pipeline progress -->
+                <div id="pipeline-progress" class="glass-panel">
+                    <span class="step" data-step="asr">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Listening</span>
+                    </span>
+                    <span class="line"></span>
+                    <span class="step" data-step="intent">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Thinking</span>
+                    </span>
+                    <span class="line"></span>
+                    <span class="step" data-step="fulfillment">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Acting</span>
+                    </span>
+                    <span class="line"></span>
+                    <span class="step" data-step="nlg">
+                        <div class="step-dot"></div>
+                        <span class="step-label">Speaking</span>
+                    </span>
                 </div>
 
-                <!-- ===== RIGHT COLUMN: Doro ===== -->
-                <div id="col-right">
-                    <div id="pet-panel">
-                        <div id="pet-header">
-                            <span id="pet-name">Doro</span>
+                <!-- Three-column layout -->
+                <div id="pipeline-columns">
+                    <!-- ===== LEFT COLUMN: Interaction + Timer ===== -->
+                    <div id="col-left">
+                        <div class="interaction-card glass-panel">
+                            <div class="controls">
+                                <div class="bypass-group full-width">
+                                    <input type="text" id="input-pipeline" placeholder="Ask Atlas anything..." autocomplete="off"/>
+                                    <button id="btn-pipeline-bypass" class="btn-action primary-gradient">Send</button>
+                                </div>
+                                <div class="nlg-toggle">
+                                    <label for="nlg-method">NLG</label>
+                                    <div class="select-wrapper">
+                                        <select id="nlg-method">
+                                            <option value="template">Template</option>
+                                            <option value="llm">LLM (SmolLM2)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                                <div class="nlg-toggle">
+                                    <label for="tts-backend">TTS</label>
+                                    <div class="select-wrapper">
+                                        <select id="tts-backend">
+                                            <option value="pyttsx3">Local</option>
+                                            <option value="openai" selected>Neural (OpenAI)</option>
+                                        </select>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <!-- Intent/Slot Bypass -->
+                            <details id="bypass-panel" class="custom-details">
+                                <summary>Developer Mode — Intent Bypass</summary>
+                                <div class="bypass-intent-form">
+                                    <div class="bypass-row">
+                                        <label for="bypass-intent">Intent</label>
+                                        <div class="select-wrapper full">
+                                            <select id="bypass-intent">
+                                                <optgroup label="Basic">
+                                                    <option value="greetings">Greetings</option>
+                                                    <option value="goodbye">Goodbye</option>
+                                                    <option value="oos">Out of Scope</option>
+                                                    <option value="set_timer">Set Timer</option>
+                                                    <option value="weather">Weather</option>
+                                                </optgroup>
+                                                <optgroup label="Movie">
+                                                    <option value="get_movie_cast">Get Movie Cast</option>
+                                                    <option value="get_similar_movies">Get Similar Movies</option>
+                                                    <option value="get_movie_plot">Get Movie Plot</option>
+                                                    <option value="get_movies_by_genre">Get Movies by Genre</option>
+                                                    <option value="get_movie_rating">Get Movie Rating</option>
+                                                    <option value="get_movie_director">Get Movie Director</option>
+                                                    <option value="get_trending_movies">Get Trending Movies</option>
+                                                    <option value="get_upcoming_movies">Get Upcoming Movies</option>
+                                                </optgroup>
+                                                <optgroup label="Pet">
+                                                    <option value="feed_pet">Feed Pet</option>
+                                                    <option value="play_with_pet">Play with Pet</option>
+                                                    <option value="pet_the_cat">Pet the Cat</option>
+                                                    <option value="wash_pet">Wash Pet</option>
+                                                    <option value="put_to_sleep">Put to Sleep</option>
+                                                    <option value="wake_up_pet">Wake Up Pet</option>
+                                                    <option value="give_treat">Give Treat</option>
+                                                    <option value="check_status">Check Status</option>
+                                                    <option value="rename_pet">Rename Pet</option>
+                                                </optgroup>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div id="bypass-slots"></div>
+                                    <button id="btn-bypass-submit" class="btn-action ghost-btn">Inject Intent</button>
+                                </div>
+                            </details>
+
+                            <!-- Response display -->
+                            <div id="pipeline-response" class="result-box">
+                                <div id="response-answer"></div>
+                                <details id="response-details" class="custom-details">
+                                    <summary>Raw Payload</summary>
+                                    <pre id="response-json"></pre>
+                                </details>
+                            </div>
                         </div>
-                        <div id="doro-canvas-wrapper">
-                            <canvas id="doro-canvas"></canvas>
-                            <img id="doro-fallback" src="/static/models/doro.webp" alt="Doro" style="display:none">
+
+                        <!-- Timer -->
+                        <div id="timer-panel" class="glass-panel">
+                            <div class="timer-header">
+                                <span>⏳</span>
+                                <h3>Quick Timer</h3>
+                            </div>
+                            <div id="timer-display">00:05</div>
+                            <div id="timer-inputs">
+                                <div class="timer-field">
+                                    <input type="number" id="timer-min" min="0" max="99" value="0">
+                                    <label>MIN</label>
+                                </div>
+                                <span class="timer-colon">:</span>
+                                <div class="timer-field">
+                                    <input type="number" id="timer-sec" min="0" max="59" value="5">
+                                    <label>SEC</label>
+                                </div>
+                            </div>
+                            <div id="timer-buttons">
+                                <button id="timer-start" class="btn-action icon-btn start-btn" title="Start">&#9654;</button>
+                                <button id="timer-pause" class="btn-action icon-btn pause-btn" title="Pause">&#9208;</button>
+                                <button id="timer-reset" class="btn-action icon-btn reset-btn" title="Reset">&#8634;</button>
+                            </div>
                         </div>
-                        <div class="stat-bar">
-                            <label>Hunger</label>
-                            <div class="bar-bg"><div class="bar-fill" id="bar-hunger"></div></div>
-                            <span class="bar-value" id="val-hunger">50</span>
+                    </div>
+
+                    <!-- ===== CENTER: Record Button ===== -->
+                    <div id="col-center">
+                        <div class="mic-container">
+                            <button id="btn-pipeline-mic" class="btn-mic main-mic" title="Click to record">
+                                <span class="mic-icon">&#127908;</span>
+                                <span class="mic-label">Tap to Speak</span>
+                            </button>
                         </div>
-                        <div class="stat-bar">
-                            <label>Happiness</label>
-                            <div class="bar-bg"><div class="bar-fill" id="bar-happiness"></div></div>
-                            <span class="bar-value" id="val-happiness">50</span>
-                        </div>
-                        <div class="stat-bar">
-                            <label>Energy</label>
-                            <div class="bar-bg"><div class="bar-fill" id="bar-energy"></div></div>
-                            <span class="bar-value" id="val-energy">50</span>
-                        </div>
-                        <div class="stat-bar">
-                            <label>Cleanliness</label>
-                            <div class="bar-bg"><div class="bar-fill" id="bar-cleanliness"></div></div>
-                            <span class="bar-value" id="val-cleanliness">50</span>
+                    </div>
+
+                    <!-- ===== RIGHT COLUMN: Doro ===== -->
+                    <div id="col-right">
+                        <div id="pet-panel" class="glass-panel holographic-card">
+                            <div class="hologram-overlay"></div>
+                            <div id="pet-header">
+                                <div class="pet-avatar-icon">🐾</div>
+                                <span id="pet-name">Doro</span>
+                            </div>
+                            <div id="doro-canvas-wrapper" class="model-container">
+                                <canvas id="doro-canvas"></canvas>
+                                <img id="doro-fallback" src="/static/models/doro.webp" alt="Doro" style="display:none">
+                            </div>
+                            <div class="pet-stats">
+                                <div class="stat-bar">
+                                    <div class="stat-info">
+                                        <label>Hunger</label>
+                                        <span class="bar-value" id="val-hunger">50</span>
+                                    </div>
+                                    <div class="bar-bg"><div class="bar-fill hunger-fill" id="bar-hunger"></div></div>
+                                </div>
+                                <div class="stat-bar">
+                                    <div class="stat-info">
+                                        <label>Happiness</label>
+                                        <span class="bar-value" id="val-happiness">50</span>
+                                    </div>
+                                    <div class="bar-bg"><div class="bar-fill happiness-fill" id="bar-happiness"></div></div>
+                                </div>
+                                <div class="stat-bar">
+                                    <div class="stat-info">
+                                        <label>Energy</label>
+                                        <span class="bar-value" id="val-energy">50</span>
+                                    </div>
+                                    <div class="bar-bg"><div class="bar-fill energy-fill" id="bar-energy"></div></div>
+                                </div>
+                                <div class="stat-bar">
+                                    <div class="stat-info">
+                                        <label>Hygiene</label>
+                                        <span class="bar-value" id="val-cleanliness">50</span>
+                                    </div>
+                                    <div class="bar-bg"><div class="bar-fill hygiene-fill" id="bar-cleanliness"></div></div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
-            </div>
-        </section>
-    </main>
+            </section>
+        </main>
 
-    <!-- ============================================================ -->
-    <!-- Conversation Log                                              -->
-    <!-- ============================================================ -->
-    <aside id="chat-log">
-        <h3>Conversation</h3>
-        <div id="chat-messages"></div>
-    </aside>
+        <!-- ============================================================ -->
+        <!-- Conversation Log (sidebar)                                    -->
+        <!-- ============================================================ -->
+        <aside id="chat-log" class="glass-panel">
+            <div class="chat-header">
+                <h3>Live Feed</h3>
+                <div class="live-indicator"></div>
+            </div>
+            <div id="chat-messages" class="custom-scrollbar">
+                <div class="chat-placeholder">Atlas is ready. Say something!</div>
+            </div>
+        </aside>
+    </div>
 
     <script src="/static/js/main.js"></script>
     <!-- 3D pet model (module script, graceful failure if CDN fails) -->

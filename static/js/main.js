@@ -386,7 +386,7 @@ function updatePet(petData) {
         const val = status[key];
         if (val !== undefined) {
             refs.fill.style.width = val + "%";
-            refs.fill.style.backgroundColor = barColor(val);
+            // colour is handled by CSS gradient classes (.hunger-fill etc.)
             refs.val.textContent = val;
         }
     }
@@ -446,6 +446,10 @@ function speak(text) {
 // ============================================================================
 
 function addChat(role, text) {
+    // Remove placeholder on first real message
+    const placeholder = $chatMessages.querySelector(".chat-placeholder");
+    if (placeholder) placeholder.remove();
+
     const div = document.createElement("div");
     div.className = "chat-msg " + role;
     div.textContent = (role === "user" ? "You: " : "Atlas: ") + text;
