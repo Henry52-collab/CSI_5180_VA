@@ -383,7 +383,7 @@ def _load_llm():
     """Load distilgpt2 model and tokenizer (cached)."""
     if "model" not in _llm_cache:
         from transformers import AutoModelForCausalLM, AutoTokenizer
-        model_name = "distilgpt2"
+        model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(model_name)
         model.eval()
