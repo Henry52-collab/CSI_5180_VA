@@ -15,7 +15,7 @@ venv/
 # Models (too large for git)
 models/*.pkl
 models/*.pth
-models/intent_bert/
+models/intent_bert/*
 
 # Allow small model files needed at runtime
 !models/user_verify_svm_v2.pkl
