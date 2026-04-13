@@ -34,8 +34,8 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models",
                           os.getenv("VERIFY_MODEL", "user_verify_svm.pkl"))
 
-# Bypass passcode
-PASSCODE = "ATLAS"
+# by pass code
+PASSCODE = "Doro"
 
 # Confidence threshold for verification
 THRESHOLD = 0.5
