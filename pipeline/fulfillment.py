@@ -263,12 +263,22 @@ class FulfillmentModule:
             "before": before,
         }
 
+        pet_name_lower = self.pet_state.name.lower()
+
+        def _clean_slot(value, default):
+            """If the slot value is just the pet's name (e.g. user said
+            'feed Doro' and the model extracted 'doro' as food_type),
+            treat it as absent and return the default."""
+            if not value or value.strip().lower() == pet_name_lower:
+                return default
+            return value
+
         if intent == "feed_pet":
-            response["food_type"] = slots.get("food_type", "food")
+            response["food_type"] = _clean_slot(slots.get("food_type"), "food")
         elif intent == "play_with_pet":
-            response["toy"] = slots.get("toy", "toy")
+            response["toy"] = _clean_slot(slots.get("toy"), "a toy")
         elif intent == "give_treat":
-            response["treat_type"] = slots.get("treat_type", "treat")
+            response["treat_type"] = _clean_slot(slots.get("treat_type"), "a treat")
         elif intent == "rename_pet" and old_name:
             response["old_name"] = old_name
             response["new_name"] = self.pet_state.name
