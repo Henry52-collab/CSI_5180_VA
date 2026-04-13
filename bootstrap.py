@@ -48,12 +48,12 @@ def download_distilbert():
     return True
 
 
-def download_distilgpt2():
-    _step(3, TOTAL_STEPS, "distilgpt2 (NLG LLM backend, ~330MB)...")
+def download_smollm2():
+    _step(3, TOTAL_STEPS, "SmolLM2-360M-Instruct (NLG LLM backend, ~720MB)...")
     try:
         from transformers import AutoTokenizer, AutoModelForCausalLM
-        AutoTokenizer.from_pretrained("distilgpt2")
-        AutoModelForCausalLM.from_pretrained("distilgpt2")
+        AutoTokenizer.from_pretrained("HuggingFaceTB/SmolLM2-360M-Instruct")
+        AutoModelForCausalLM.from_pretrained("HuggingFaceTB/SmolLM2-360M-Instruct")
         print("      OK.")
     except Exception as e:
         print(f"      FAILED: {e}")
@@ -66,16 +66,16 @@ def main():
     print("=" * 60)
     print("  ATLAS VA — Bootstrap (one-time model download)")
     print("=" * 60)
-    print("  Downloading ~1050MB of ML weights. This takes 2-10 minutes")
+    print("  Downloading ~1450MB of ML weights. This takes 3-15 minutes")
     print("  depending on your connection. Files are cached in:")
     print("    - ~/.cache/whisper/        (Whisper)")
-    print("    - ~/.cache/huggingface/    (DistilBERT, distilgpt2)")
+    print("    - ~/.cache/huggingface/    (DistilBERT, SmolLM2)")
     print("=" * 60)
 
     results = []
-    results.append(("Whisper small.en",           download_whisper()))
-    results.append(("distilbert-base-uncased",    download_distilbert()))
-    results.append(("distilgpt2",                 download_distilgpt2()))
+    results.append(("Whisper small.en",              download_whisper()))
+    results.append(("distilbert-base-uncased",       download_distilbert()))
+    results.append(("SmolLM2-360M-Instruct",         download_smollm2()))
 
     print("\n" + "=" * 60)
     print("  Summary")
