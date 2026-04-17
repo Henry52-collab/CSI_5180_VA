@@ -122,12 +122,14 @@ def _template_get_similar_movies(intent_data, api_response):
 def _template_get_movie_plot(intent_data, api_response):
     title = api_response.get("title", "that movie")
     plot = api_response.get("plot", "")
+    runtime = api_response.get("runtime_str", "")
     if not plot:
         return f"Sorry, I couldn't find the plot for {title}."
+    length_note = f" ({runtime})" if runtime else ""
     templates = [
-        f"Here's the plot of {title}: {plot}",
-        f"{title} — {plot}",
-        f"The story of {title}: {plot}",
+        f"Here's the plot of {title}{length_note}: {plot}",
+        f"{title}{length_note} — {plot}",
+        f"The story of {title}{length_note}: {plot}",
     ]
     return random.choice(templates)
 
@@ -149,10 +151,12 @@ def _template_get_movies_by_genre(intent_data, api_response):
 def _template_get_movie_rating(intent_data, api_response):
     title = api_response.get("title", "that movie")
     rating = api_response.get("rating", "N/A")
+    runtime = api_response.get("runtime_str", "")
+    length_note = f" It runs {runtime}." if runtime else ""
     templates = [
-        f"{title} has a rating of {rating}/10.",
-        f"The rating for {title} is {rating} out of 10.",
-        f"{title} is rated {rating}/10.",
+        f"{title} has a rating of {rating}/10.{length_note}",
+        f"The rating for {title} is {rating} out of 10.{length_note}",
+        f"{title} is rated {rating}/10.{length_note}",
     ]
     return random.choice(templates)
 

@@ -300,6 +300,12 @@ class FulfillmentModule:
             response["title"] = title
             response["plot"] = details.get("overview", "")
             response["rating"] = details.get("vote_average", "N/A")
+            runtime = details.get("runtime")
+            if runtime:
+                hours, mins = divmod(runtime, 60)
+                response["runtime"] = runtime
+                response["runtime_str"] = (f"{hours}h {mins}m" if hours
+                                           else f"{mins}m")
             response["cast"] = [
                 a.get("name") or a.get("original_name", "")
                 for a in details.get("credits", {}).get("cast", [])
