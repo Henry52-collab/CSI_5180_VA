@@ -28,6 +28,7 @@ let systemState = "locked";   // locked | unlocked | awake | processing
 let mediaRecorder = null;
 let audioChunks = [];
 let statePoller = null;
+let currentAudio = null;      // reference to playing Audio element for stop
 
 // ============================================================================
 // DOM refs
@@ -59,6 +60,9 @@ const $ttsBackend        = document.getElementById("tts-backend");
 const $responseAnswer    = document.getElementById("response-answer");
 const $responseJson      = document.getElementById("response-json");
 const $pipelineResponse  = document.getElementById("pipeline-response");
+
+// Stop
+const $btnStop = document.getElementById("btn-stop");
 
 // Pet
 const $petName = document.getElementById("pet-name");
@@ -416,13 +420,14 @@ async function pollState() {
 function playAnswer(d) {
     if (!d || !d.answer) return;
 
-    // Cancel any in-flight speech so we don't overlap
-    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    stopAudio();
 
     if (d.audio_b64) {
         const mime = d.audio_mime || "audio/mpeg";
-        const audio = new Audio(`data:${mime};base64,${d.audio_b64}`);
-        audio.play().catch((err) => {
+        currentAudio = new Audio(`data:${mime};base64,${d.audio_b64}`);
+        currentAudio.onended = () => { currentAudio = null; hideStopBtn(); };
+        showStopBtn();
+        currentAudio.play().catch((err) => {
             console.warn("Backend audio playback failed, falling back to browser TTS:", err);
             speak(d.answer);
         });
@@ -430,6 +435,16 @@ function playAnswer(d) {
         if (d.tts_error) console.warn("Backend TTS error:", d.tts_error);
         speak(d.answer);
     }
+}
+
+function stopAudio() {
+    if (currentAudio) {
+        currentAudio.pause();
+        currentAudio.currentTime = 0;
+        currentAudio = null;
+    }
+    if (window.speechSynthesis) window.speechSynthesis.cancel();
+    hideStopBtn();
 }
 
 function speak(text) {
@@ -513,6 +528,28 @@ async function blobToWav(blob) {
 // Mic recording (click to start, click again to stop)
 // ============================================================================
 
+function showStopBtn() { $btnStop.classList.add("visible"); }
+function hideStopBtn() { if (!activeRecording && !currentAudio) $btnStop.classList.remove("visible"); }
+
+$btnStop.addEventListener("click", () => {
+    cancelRecording();
+    stopAudio();
+});
+
+let activeRecording = null;   // { recorder, stream, button, label, cancelled }
+
+function cancelRecording() {
+    if (!activeRecording) return;
+    activeRecording.cancelled = true;
+    const { recorder, stream, button, label } = activeRecording;
+    if (recorder && recorder.state === "recording") recorder.stop();
+    if (stream) stream.getTracks().forEach(t => t.stop());
+    button.classList.remove("recording");
+    if (label) label.textContent = "Click to Record";
+    activeRecording = null;
+    hideStopBtn();
+}
+
 function setupMic(button, sendCallback) {
     let recorder = null;
     let chunks = [];
@@ -529,9 +566,6 @@ function setupMic(button, sendCallback) {
         }
 
         try {
-            // Disable WebRTC DSP — it aggressively compresses quiet speech and
-            // erases spectral detail (learning-based noise suppression), which
-            // tanks both ASR accuracy and speaker-verification confidence.
             stream = await navigator.mediaDevices.getUserMedia({
                 audio: {
                     echoCancellation: false,
@@ -541,9 +575,15 @@ function setupMic(button, sendCallback) {
             });
             chunks = [];
             recorder = new MediaRecorder(stream);
+            const ctx = { recorder, stream, button, label, cancelled: false };
+            activeRecording = ctx;
+
             recorder.ondataavailable = (ev) => chunks.push(ev.data);
             recorder.onstop = async () => {
                 stream.getTracks().forEach((t) => t.stop());
+                activeRecording = null;
+                hideStopBtn();
+                if (ctx.cancelled) return;
                 const webmBlob = new Blob(chunks, { type: recorder.mimeType });
                 const wavBlob = await blobToWav(webmBlob);
                 sendCallback(wavBlob);
@@ -552,6 +592,7 @@ function setupMic(button, sendCallback) {
             recorder.start();
             button.classList.add("recording");
             if (label) label.textContent = "Click to Send";
+            showStopBtn();
         } catch (err) {
             console.error("Mic access denied:", err);
         }

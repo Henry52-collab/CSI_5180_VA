@@ -371,6 +371,33 @@ main {
     to { box-shadow: 0 0 0 28px rgba(239,68,68,0); }
 }
 
+.btn-stop {
+    width: 48px; height: 48px;
+    border-radius: 50%;
+    border: none;
+    background: var(--danger);
+    color: #fff;
+    cursor: pointer;
+    display: none;
+    align-items: center;
+    justify-content: center;
+    flex-direction: column;
+    transition: all 0.2s ease;
+    box-shadow: 0 4px 12px rgba(239,68,68,0.3);
+}
+.btn-stop:hover {
+    transform: scale(1.1);
+    box-shadow: 0 6px 18px rgba(239,68,68,0.5);
+}
+.btn-stop.visible { display: flex; }
+.stop-icon { font-size: 1.1rem; line-height: 1; }
+.stop-label {
+    font-size: 0.55rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    margin-top: 2px;
+}
+
 /* ============================================================
    Pipeline Layout
    ============================================================ */
