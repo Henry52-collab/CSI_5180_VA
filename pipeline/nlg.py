@@ -209,101 +209,112 @@ def _pet_status_str(status):
     return ", ".join(parts) + " out of one hundred"
 
 
+_MOOD_ADJECTIVE = {
+    "hunger":      ("full",      "hungry"),
+    "happiness":   ("happy",     "sad"),
+    "energy":      ("energetic", "tired"),
+    "cleanliness": ("clean",     "messy"),
+}
+
+
+def _pet_mood(name, before, after):
+    """One-line status reaction based on the stat that changed most."""
+    if not before or not after:
+        return ""
+    best_stat, best_delta = None, 0
+    for stat in _MOOD_ADJECTIVE:
+        delta = after.get(stat, 0) - before.get(stat, 0)
+        if abs(delta) > abs(best_delta):
+            best_delta = delta
+            best_stat = stat
+    if not best_stat or abs(best_delta) < 3:
+        return ""
+    level = after.get(best_stat, 50)
+    pos, neg = _MOOD_ADJECTIVE[best_stat]
+    if level >= 80:
+        return f" {name} looks really {pos}!"
+    elif level >= 50:
+        return f" {name} seems {pos}."
+    else:
+        return f" {name} looks a bit {neg}."
+
+
 def _template_feed_pet(intent_data, api_response):
     food = api_response.get("food_type", "food")
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"You fed {name} some {food}. Yum!",
-        f"{name} happily ate the {food}!",
-        f"Feeding time! {name} enjoyed the {food}.",
+        f"You fed {name} some {food}. Yum!{mood}",
+        f"{name} happily ate the {food}!{mood}",
+        f"Feeding time! {name} enjoyed the {food}.{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_play_with_pet(intent_data, api_response):
     toy = api_response.get("toy", "toy")
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"You played with {name} using the {toy}. So fun!",
-        f"{name} had a great time playing with the {toy}!",
-        f"Play time with {name} and the {toy}!",
+        f"You played with {name} using the {toy}. So fun!{mood}",
+        f"{name} had a great time playing with the {toy}!{mood}",
+        f"Play time with {name} and the {toy}!{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_pet_the_cat(intent_data, api_response):
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"You gave {name} some cuddles. {name} purrs happily!",
-        f"{name} loves the attention! Purr purr.",
-        f"You petted {name}. {name} is so happy!",
+        f"You gave {name} some cuddles.{mood}",
+        f"{name} loves the attention! Purr purr.{mood}",
+        f"You petted {name}. {name} is so happy!{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_wash_pet(intent_data, api_response):
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"You gave {name} a bath. All clean now!",
-        f"{name} is squeaky clean after that bath!",
-        f"Bath time is over. {name} looks fresh and clean!",
+        f"You gave {name} a bath. All clean now!{mood}",
+        f"{name} is squeaky clean after that bath!{mood}",
+        f"Bath time is over.{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_put_to_sleep(intent_data, api_response):
     name = api_response.get("pet_name", "your pet")
-    duration = api_response.get("duration", "a while")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"{name} is now sleeping for {duration}. Sweet dreams!",
-        f"Shh... {name} is taking a nap for {duration}.",
-        f"Goodnight {name}! Sleeping for {duration}.",
+        f"{name} is now sleeping. Sweet dreams!{mood}",
+        f"Shh... {name} is taking a nap.{mood}",
+        f"Goodnight {name}!{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_wake_up_pet(intent_data, api_response):
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"{name} is now awake and ready to play!",
-        f"Good morning {name}! Rise and shine!",
-        f"You woke up {name}. {name} stretches and yawns.",
+        f"{name} is now awake and ready to play!{mood}",
+        f"Good morning {name}! Rise and shine!{mood}",
+        f"You woke up {name}. {name} stretches and yawns.{mood}",
     ]
-    # Note: pet status is displayed in the UI's side panel (stat bars), so we
-    # don't append it to the spoken text — keeps TTS clean. If you want the
-    # spoken status back later, toggle via a NLG option.
     return random.choice(templates)
 
 
 def _template_give_treat(intent_data, api_response):
     treat = api_response.get("treat_type", "treat")
     name = api_response.get("pet_name", "your pet")
-    status = api_response.get("status", {})
+    mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
     templates = [
-        f"You gave {name} a {treat}. {name} loved it!",
-        f"{name} happily munched on the {treat}!",
-        f"Treat time! {name} devoured the {treat}.",
+        f"You gave {name} a {treat}. {name} loved it!{mood}",
+        f"{name} happily munched on the {treat}!{mood}",
+        f"Treat time! {name} devoured the {treat}.{mood}",
     ]
     # Note: pet status is displayed in the UI's side panel (stat bars), so we
     # don't append it to the spoken text — keeps TTS clean. If you want the
