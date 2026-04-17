@@ -204,23 +204,21 @@ class FulfillmentModule:
         has_pet_name = pet_name in t
         has_generic  = bool(words & self._GENERIC_REFS)
 
-        if not has_pet_name and not has_generic:
-            m = re.search(
-                r"(?:play with|feed|pet|wash|give .{0,15} to|"
-                r"put .{0,10} to sleep|wake up|treat)\s+"
-                r"(?:the|my|a)?\s*([a-z]+)",
-                t,
-            )
-            return m.group(1) if m else "someone"
-
-        m = re.search(
+        _VERB_PAT = (
             r"(?:play with|feed|pet|wash|give .{0,15} to|"
             r"put .{0,10} to sleep|wake up|treat)\s+"
-            r"(?:the|my|a)?\s*([a-z]+)",
-            t,
+            r"(?:the|my|a)?\s*([a-z]+)(?:\s+([a-z]+))?"
         )
+
+        if not has_pet_name and not has_generic:
+            m = re.search(_VERB_PAT, t)
+            return m.group(1) if m else "someone"
+
+        m = re.search(_VERB_PAT, t)
         if m:
             obj = m.group(1)
+            if obj in self._GENERIC_REFS and m.group(2):
+                obj = m.group(2)
             if obj != pet_name and obj not in self._GENERIC_REFS:
                 return obj
 
