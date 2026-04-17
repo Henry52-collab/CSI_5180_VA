@@ -14,6 +14,7 @@ Pet state + integration by Fengshou.
 
 from dotenv import load_dotenv
 import os
+import re
 import time
 from pytimeparse import parse as parse_duration
 
@@ -168,9 +169,35 @@ class FulfillmentModule:
         if intent in ("feed_pet", "play_with_pet", "pet_the_cat", "wash_pet",
                        "put_to_sleep", "wake_up_pet", "give_treat",
                        "check_status", "rename_pet"):
+            if intent not in ("rename_pet", "check_status"):
+                wrong = self._check_pet_name(intent_data.get("transcript", ""))
+                if wrong:
+                    return {"type": "pet", "action": intent, "error": "wrong_name",
+                            "pet_name": self.pet_state.name, "spoken_name": wrong}
             return self.process_pet(intent, slots)
 
         return {"type": "oos"}
+
+    # ------------------------------------------------------------------
+    # Pet name validation (keyword matching against ASR transcript)
+    # ------------------------------------------------------------------
+    _GENERIC_REFS = {"pet", "cat", "dog", "kitty", "doggy", "kitten", "puppy",
+                     "it", "him", "her", "them", "the", "my", "our"}
+
+    def _check_pet_name(self, transcript):
+        """Return the wrong name if user addressed a different pet, else None."""
+        m = re.search(
+            r"(?:play with|feed|pet|wash|give .{0,15} to|put .{0,10} to sleep|"
+            r"wake up|treat)\s+(?:the|my|a)?\s*([a-z]+)",
+            transcript.lower(),
+        )
+        if not m:
+            return None
+        obj = m.group(1)
+        pet_name = self.pet_state.name.lower()
+        if obj == pet_name or obj in self._GENERIC_REFS:
+            return None
+        return obj
 
     # ------------------------------------------------------------------
     # Timer

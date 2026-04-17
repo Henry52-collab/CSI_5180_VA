@@ -184,6 +184,7 @@ def pipeline():
             slots = {}
         intent_data = {"intent": intent_name, "confidence": 1.0, "slots": slots}
         transcribed_text = f"[bypass: {intent_name}]"
+        intent_data["transcript"] = transcribed_text
 
         try:
             fulfillment_result = fulfillment.process(intent_data)
@@ -233,6 +234,7 @@ def pipeline():
     print(f"[Pipeline] Intent: {intent_data.get('intent')} ({intent_data.get('confidence', 0):.2f}) slots={intent_data.get('slots')}")
 
     # --- Fulfillment ---
+    intent_data["transcript"] = transcribed_text
     try:
         fulfillment_result = fulfillment.process(intent_data)
     except Exception as e:

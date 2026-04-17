@@ -386,6 +386,10 @@ def _format_cap_warning(intent, api_response):
 
 def _generate_template(intent_data, api_response):
     intent = intent_data.get("intent", "")
+    if api_response.get("error") == "wrong_name":
+        name = api_response.get("pet_name", "your pet")
+        wrong = api_response.get("spoken_name", "that")
+        return f"I don't know anyone called {wrong}. My pet's name is {name}!"
     if api_response.get("cap_warning"):
         return _format_cap_warning(intent, api_response)
     handler = TEMPLATE_MAP.get(intent)
@@ -590,6 +594,10 @@ def _derive_emotion(intent, api_response):
     """
     # Tier 1 — hard failure
     if api_response.get("type") == "error":
+        return "apologetic"
+
+    # Pet name mismatch
+    if api_response.get("error") == "wrong_name":
         return "apologetic"
 
     # Pet cap warning (action refused because stat at limit)
