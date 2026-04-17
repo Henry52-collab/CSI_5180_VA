@@ -391,9 +391,10 @@ function updatePet(petData) {
         }
     }
 
-    // Trigger 3D animation if available
+    // Trigger 3D animation only if the action actually succeeded
     const action = petData.action;
-    if (action && typeof window.doroPlayAnimation === "function") {
+    if (action && !petData.error && !petData.cap_warning
+        && typeof window.doroPlayAnimation === "function") {
         const animName = INTENT_TO_ANIM[action] || action;
         window.doroPlayAnimation(animName);
     }
