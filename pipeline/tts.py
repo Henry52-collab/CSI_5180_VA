@@ -31,10 +31,10 @@ BASE_RATE   = 170      # words per minute, pyttsx3 default ~200
 BASE_VOLUME = 0.85
 
 PROSODY_BY_EMOTION = {
-    "happy":      {"rate_delta":  30, "volume_delta":  0.15},
-    "excited":    {"rate_delta":  40, "volume_delta":  0.20},
-    "calm":       {"rate_delta": -25, "volume_delta": -0.15},
-    "apologetic": {"rate_delta": -10, "volume_delta": -0.10},
+    "happy":      {"rate_delta":  50, "volume_delta":  0.15},
+    "excited":    {"rate_delta":  70, "volume_delta":  0.15},
+    "calm":       {"rate_delta": -45, "volume_delta": -0.20},
+    "apologetic": {"rate_delta": -30, "volume_delta": -0.15},
     "neutral":    {"rate_delta":   0, "volume_delta":  0.00},
 }
 
