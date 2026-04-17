@@ -185,19 +185,46 @@ class FulfillmentModule:
                      "it", "him", "her", "them", "the", "my", "our"}
 
     def _check_pet_name(self, transcript):
-        """Return the wrong name if user addressed a different pet, else None."""
-        m = re.search(
-            r"(?:play with|feed|pet|wash|give .{0,15} to|put .{0,10} to sleep|"
-            r"wake up|treat)\s+(?:the|my|a)?\s*([a-z]+)",
-            transcript.lower(),
-        )
-        if not m:
+        """Return a wrong-name string if validation fails, else None.
+
+        Two-layer check:
+        1. Transcript must contain the pet name OR a generic reference.
+           Catches garbled ASR like "Petoro" (neither "doro" nor "pet").
+        2. If a pet-action verb has a specific object, it must match the
+           pet name. Catches "feed ryan" when pet is Doro.
+        """
+        t = transcript.lower().strip()
+
+        if t.startswith("[bypass:"):
             return None
-        obj = m.group(1)
+
         pet_name = self.pet_state.name.lower()
-        if obj == pet_name or obj in self._GENERIC_REFS:
-            return None
-        return obj
+        words = set(t.split())
+
+        has_pet_name = pet_name in t
+        has_generic  = bool(words & self._GENERIC_REFS)
+
+        if not has_pet_name and not has_generic:
+            m = re.search(
+                r"(?:play with|feed|pet|wash|give .{0,15} to|"
+                r"put .{0,10} to sleep|wake up|treat)\s+"
+                r"(?:the|my|a)?\s*([a-z]+)",
+                t,
+            )
+            return m.group(1) if m else "someone"
+
+        m = re.search(
+            r"(?:play with|feed|pet|wash|give .{0,15} to|"
+            r"put .{0,10} to sleep|wake up|treat)\s+"
+            r"(?:the|my|a)?\s*([a-z]+)",
+            t,
+        )
+        if m:
+            obj = m.group(1)
+            if obj != pet_name and obj not in self._GENERIC_REFS:
+                return obj
+
+        return None
 
     # ------------------------------------------------------------------
     # Timer
