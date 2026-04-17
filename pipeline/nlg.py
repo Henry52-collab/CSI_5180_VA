@@ -56,9 +56,10 @@ def _template_set_timer(intent_data, api_response):
 
 def _template_weather(intent_data, api_response):
     city = api_response.get("city", "your location")
+    country = api_response.get("country", "")
+    location = f"{city}, {country}" if country else city
     error = api_response.get("error")
 
-    # City not found — the most common failure, worth a distinct apology
     if error == "city_not_found":
         templates = [
             f"Sorry, I couldn't find a city called {city} in the weather service.",
@@ -67,7 +68,6 @@ def _template_weather(intent_data, api_response):
         ]
         return random.choice(templates)
 
-    # Other service failures (network, bad key, bad payload)
     if error in {"request_failed", "service_error", "invalid_response", "missing_api_key"}:
         message = api_response.get("message")
         templates = [
@@ -77,14 +77,13 @@ def _template_weather(intent_data, api_response):
         ]
         return random.choice(templates)
 
-    # Happy path
     temp = api_response.get("temperature", "N/A")
     description = api_response.get("description", "unknown conditions")
     wind = api_response.get("windspeed", "N/A")
     templates = [
-        f"The current weather in {city} is {description}. The temperature is {temp}°C with wind speed of {wind} km/h.",
-        f"Right now in {city}, it's {temp}°C with {description}. Wind is blowing at {wind} km/h.",
-        f"In {city}, expect {description} at {temp}°C. Current wind speed is {wind} km/h.",
+        f"The current weather in {location} is {description}. The temperature is {temp}°C with wind speed of {wind} km/h.",
+        f"Right now in {location}, it's {temp}°C with {description}. Wind is blowing at {wind} km/h.",
+        f"In {location}, expect {description} at {temp}°C. Current wind speed is {wind} km/h.",
     ]
     return random.choice(templates)
 

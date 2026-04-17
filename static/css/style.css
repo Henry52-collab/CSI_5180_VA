@@ -199,12 +199,14 @@ main {
    ============================================================ */
 .controls {
     display: flex;
-    flex-direction: column;
-    gap: 12px;
+    flex-wrap: wrap;
+    gap: 8px;
     width: 100%;
     align-items: center;
-    margin-bottom: 16px;
+    margin-bottom: 12px;
 }
+.controls .bypass-group { flex: 1 1 100%; }
+.controls .nlg-toggle { flex: 0 0 auto; }
 
 .bypass-group {
     display: flex;
