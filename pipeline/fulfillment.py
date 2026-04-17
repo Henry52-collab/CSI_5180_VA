@@ -169,7 +169,7 @@ class FulfillmentModule:
         if intent in ("feed_pet", "play_with_pet", "pet_the_cat", "wash_pet",
                        "put_to_sleep", "wake_up_pet", "give_treat",
                        "check_status", "rename_pet"):
-            if intent not in ("rename_pet", "check_status"):
+            if intent != "rename_pet":
                 wrong = self._check_pet_name(intent_data.get("transcript", ""))
                 if wrong:
                     return {"type": "pet", "action": intent, "error": "wrong_name",
