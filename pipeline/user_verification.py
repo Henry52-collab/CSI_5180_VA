@@ -17,12 +17,12 @@ import librosa
 # ---------------------------------------------------------------------------
 # Constants (must match training)
 # ---------------------------------------------------------------------------
-TARGET_SR = 16000
-DURATION = 3
-NUM_SAMPLES = TARGET_SR * DURATION
-N_MFCC = 20
-WINDOW_SEC = 0.025
-HOP_SEC = 0.010
+TARGET_SR = 16000          # 16 kHz mono — standard for speech tasks
+DURATION = 3               # clip length in seconds
+NUM_SAMPLES = TARGET_SR * DURATION  # = 48000 samples per clip
+N_MFCC = 20                # number of Mel-frequency cepstral coefficients
+WINDOW_SEC = 0.025         # 25 ms FFT window (speech-standard)
+HOP_SEC = 0.010            # 10 ms hop → high time resolution for speaker traits
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 
@@ -51,24 +51,28 @@ def _pad_or_trim(audio):
 
 
 def _extract_features_v1(audio, sr):
-    """V1: mean + std MFCC = 40 dims."""
+    """V1: mean + std of 20 MFCCs → 40-dim feature vector.
+    Simple but sensitive to recording channel (mic type, room)."""
     audio = _pad_or_trim(audio)
-    n_fft = int(WINDOW_SEC * sr)
-    hop_length = int(HOP_SEC * sr)
+    n_fft = int(WINDOW_SEC * sr)     # FFT window = 400 samples at 16 kHz
+    hop_length = int(HOP_SEC * sr)   # hop = 160 samples → 100 frames/sec
     mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC,
                                 n_fft=n_fft, hop_length=hop_length)
+    # mean captures "average voice timbre", std captures "variability"
     return np.concatenate([np.mean(mfcc, axis=1), np.std(mfcc, axis=1)])
 
 
 def _extract_features_v2(audio, sr):
-    """V2/V4: std + delta-std + delta2-std = 60 dims."""
+    """V2/V4: std of MFCC + delta + delta-delta → 60-dim feature vector.
+    Drops mean (channel-dependent), keeps only std (more robust).
+    Delta/delta-delta capture how voice dynamics change over time."""
     audio = _pad_or_trim(audio)
     n_fft = int(WINDOW_SEC * sr)
     hop_length = int(HOP_SEC * sr)
     mfcc = librosa.feature.mfcc(y=audio, sr=sr, n_mfcc=N_MFCC,
                                 n_fft=n_fft, hop_length=hop_length)
-    delta = librosa.feature.delta(mfcc, order=1)
-    delta2 = librosa.feature.delta(mfcc, order=2)
+    delta = librosa.feature.delta(mfcc, order=1)   # 1st derivative (velocity)
+    delta2 = librosa.feature.delta(mfcc, order=2)  # 2nd derivative (acceleration)
     return np.concatenate([np.std(mfcc, axis=1),
                            np.std(delta, axis=1),
                            np.std(delta2, axis=1)])
@@ -148,9 +152,10 @@ def process(audio, sr=TARGET_SR):
 
     svm, scaler = _load_model()
     features = _extract_features(audio, sr)
+    # StandardScaler normalizes features to zero-mean unit-variance (fit on training data)
     features_scaled = scaler.transform(features.reshape(1, -1))
-
-    confidence = svm.predict_proba(features_scaled)[0, 1]  # P(authorized)
+    # predict_proba returns [P(unauthorized), P(authorized)] — we want column 1
+    confidence = svm.predict_proba(features_scaled)[0, 1]
     verified = confidence >= THRESHOLD
 
     return {"verified": bool(verified), "confidence": round(float(confidence), 3)}

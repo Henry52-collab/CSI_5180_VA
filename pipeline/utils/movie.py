@@ -1,6 +1,14 @@
+"""Movie API wrapper using TMDB (The Movie Database).
+
+Provides methods for searching movies, fetching details (with credits
+and recommendations appended), discovering by genre, and getting
+trending/upcoming lists. All responses are raw TMDB JSON.
+"""
+
 from dotenv import load_dotenv
 import os
 import requests
+
 
 class MovieAPIModule():
     def __init__(self):
@@ -13,6 +21,7 @@ class MovieAPIModule():
         return p
 
     def get_movie_id(self, movie_title):
+        """Search TMDB by title and return the ID of the top result."""
         url = "https://api.themoviedb.org/3/search/movie"
         response = requests.get(url, params=self._params(query=movie_title))
 
@@ -24,6 +33,7 @@ class MovieAPIModule():
         return results[0]["id"]
 
     def get_movie_details(self, movie_title):
+        """Fetch full movie details including credits and recommendations."""
         movie_id = self.get_movie_id(movie_title)
         if movie_id is None:
             return None
@@ -36,6 +46,7 @@ class MovieAPIModule():
         return response.json()
 
     def get_genre_id(self):
+        """Fetch TMDB genre list and return {genre_name_lower: genre_id} mapping."""
         url = "https://api.themoviedb.org/3/genre/movie/list"
         response = requests.get(url, params=self._params())
 
@@ -48,6 +59,7 @@ class MovieAPIModule():
         return genre_to_id
 
     def find_movie(self, genre):
+        """Discover movies filtered by genre name (e.g. "action", "comedy")."""
         genre_to_id = self.get_genre_id()
         if not genre_to_id or genre.lower() not in genre_to_id:
             return None
@@ -61,6 +73,7 @@ class MovieAPIModule():
         return response.json()
 
     def get_trending_movie(self, time_window):
+        """Get trending movies for a time window ("day" or "week")."""
         if time_window.lower() not in ("day", "week"):
             return None
         url = f"https://api.themoviedb.org/3/trending/movie/{time_window.lower()}"
@@ -71,6 +84,7 @@ class MovieAPIModule():
         return response.json()
 
     def get_upcoming_movies(self):
+        """Get list of upcoming movie releases."""
         url = "https://api.themoviedb.org/3/movie/upcoming"
         response = requests.get(url, params=self._params())
 

@@ -1,3 +1,12 @@
+"""Weather API wrapper using OpenWeatherMap.
+
+Two-step process:
+  1. Geocode city name → (lat, lon) via /geo/1.0/direct
+  2. Fetch current weather via /data/2.5/weather using coords
+
+All methods return {"ok": True/False, ...} for uniform error handling.
+"""
+
 from dotenv import load_dotenv
 import os
 import requests
@@ -15,6 +24,7 @@ class WeatherAPIModule():
         return {"ok": False, "error": error, "message": message, **data}
 
     def get_coordinates(self, city, country=None):
+        """Geocode a city name to (lat, lon). Returns top match from OpenWeatherMap."""
         if not self.OPENWEATHER_API_KEY:
             return self._error(
                 "missing_api_key",
@@ -91,6 +101,7 @@ class WeatherAPIModule():
         )
 
     def get_weather(self, city, country=None):
+        """Full pipeline: geocode city → fetch weather. Returns metric units (°C, m/s)."""
         coords = self.get_coordinates(city, country)
         if not coords.get("ok"):
             return coords

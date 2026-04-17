@@ -423,18 +423,24 @@ _llm_cache = {}
 
 
 def _load_llm():
-    """Load SmolLM2-360M-Instruct model and tokenizer (cached)."""
+    """Load SmolLM2-360M-Instruct model and tokenizer (cached).
+    SmolLM2 is a 360M-parameter instruction-tuned causal LM by HuggingFace.
+    Small enough to run on CPU (~720 MB), used as an alternative to templates
+    for more varied NLG output. Lazy-loaded on first LLM-mode request."""
     if "model" not in _llm_cache:
         from transformers import AutoModelForCausalLM, AutoTokenizer
         model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
         tokenizer = AutoTokenizer.from_pretrained(model_name)
         model = AutoModelForCausalLM.from_pretrained(model_name)
-        model.eval()
+        model.eval()  # disable dropout for deterministic inference
         _llm_cache["model"] = model
         _llm_cache["tokenizer"] = tokenizer
     return _llm_cache["model"], _llm_cache["tokenizer"]
 
 
+# Maps each intent to a persona string injected into the LLM system prompt.
+# This grounds the model's tone — "movie assistant" responds differently from
+# "virtual pet caretaker".
 ROLE_MAP = {
     "weather": "a weather assistant",
     "get_movie_cast": "a movie assistant",

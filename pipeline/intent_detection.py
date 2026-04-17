@@ -38,26 +38,45 @@ DEFAULT_MODEL_NAME = "distilbert-base-uncased"
 # ============================================================================
 
 class JointIntentSlotModel(nn.Module):
+    """Joint intent classification + slot filling on top of DistilBERT.
+
+    Architecture:
+      ┌────────────┐
+      │ DistilBERT │  ← frozen or fine-tuned encoder
+      │  encoder   │
+      └─────┬──────┘
+            │ last_hidden_state: (batch, seq_len, 768)
+            ├──────────────────────────────────────────┐
+            │ [CLS] token (index 0)                    │ all token embeddings
+            ▼                                          ▼
+      ┌──────────────┐                          ┌──────────────┐
+      │ Intent head   │  256 → num_intents      │  Slot head   │  768 → num_slots
+      │ (2-layer MLP) │                          │  (linear)    │  per token
+      └──────────────┘                          └──────────────┘
+    """
+
     def __init__(self, num_intents, num_slots, model_name=DEFAULT_MODEL_NAME):
         super().__init__()
         self.encoder = AutoModel.from_pretrained(model_name)
-        hidden_size = self.encoder.config.hidden_size
+        hidden_size = self.encoder.config.hidden_size  # 768 for distilbert
 
+        # Intent: [CLS] embedding → 2-layer MLP → logits over intent classes
         self.intent_classifier = nn.Sequential(
             nn.Linear(hidden_size, 256),
             nn.ReLU(),
             nn.Dropout(0.1),
             nn.Linear(256, num_intents),
         )
+        # Slots: per-token linear → logits over BIO slot labels
         self.slot_classifier = nn.Linear(hidden_size, num_slots)
 
     def forward(self, input_ids, attention_mask):
         outputs = self.encoder(input_ids=input_ids, attention_mask=attention_mask)
-        sequence_output = outputs.last_hidden_state
-        cls_output = sequence_output[:, 0]
+        sequence_output = outputs.last_hidden_state   # (batch, seq, 768)
+        cls_output = sequence_output[:, 0]            # [CLS] = sentence embedding
 
-        intent_logits = self.intent_classifier(cls_output)
-        slot_logits = self.slot_classifier(sequence_output)
+        intent_logits = self.intent_classifier(cls_output)      # (batch, num_intents)
+        slot_logits = self.slot_classifier(sequence_output)     # (batch, seq, num_slots)
         return intent_logits, slot_logits
 
 

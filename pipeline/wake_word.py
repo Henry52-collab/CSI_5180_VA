@@ -18,12 +18,12 @@ import librosa
 # ---------------------------------------------------------------------------
 # Constants (must match training)
 # ---------------------------------------------------------------------------
-TARGET_SR = 16000
-DURATION = 2
-NUM_SAMPLES = TARGET_SR * DURATION
-N_MFCC = 13
-WINDOW_SEC = 0.025
-HOP_SEC = 0.025
+TARGET_SR = 16000          # 16 kHz mono
+DURATION = 2               # 2 sec clip — wake word is short
+NUM_SAMPLES = TARGET_SR * DURATION  # = 32000 samples
+N_MFCC = 13                # 13 MFCCs (standard for keyword spotting)
+WINDOW_SEC = 0.025         # 25 ms FFT window
+HOP_SEC = 0.025            # 25 ms hop (non-overlapping frames → 81 time steps)
 
 BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 MODEL_PATH = os.path.join(BASE_DIR, "models", "wake_word_cnn.pth")
@@ -36,29 +36,35 @@ THRESHOLD = 0.5
 # CNN Model (must match training architecture)
 # ---------------------------------------------------------------------------
 class WakeWordCNN(nn.Module):
+    """Small 2-layer CNN that classifies MFCC spectrograms as wake/non-wake.
+    Input: (batch, 1, n_mfcc, time_steps) — single-channel MFCC image.
+    Output: (batch, 1) — sigmoid probability of wake word presence."""
+
     def __init__(self, n_mfcc=N_MFCC, n_time_steps=81):
         super().__init__()
-        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)
-        self.pool1 = nn.MaxPool2d(2, 2)
-        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)
-        self.pool2 = nn.MaxPool2d(2, 2)
+        # Two conv layers progressively extract spectral+temporal patterns
+        self.conv1 = nn.Conv2d(1, 16, kernel_size=3, padding=1)   # 1→16 channels
+        self.pool1 = nn.MaxPool2d(2, 2)                           # halve spatial dims
+        self.conv2 = nn.Conv2d(16, 32, kernel_size=3, padding=1)  # 16→32 channels
+        self.pool2 = nn.MaxPool2d(2, 2)                           # halve again
         self.dropout = nn.Dropout(0.3)
 
+        # After two 2x2 pools: h = n_mfcc/4, w = time_steps/4
         h = n_mfcc // 2 // 2
         w = n_time_steps // 2 // 2
         self.flat_size = 32 * h * w
 
-        self.fc1 = nn.Linear(self.flat_size, 32)
-        self.fc2 = nn.Linear(32, 1)
+        self.fc1 = nn.Linear(self.flat_size, 32)  # dense hidden layer
+        self.fc2 = nn.Linear(32, 1)               # binary output
 
     def forward(self, x):
-        x = self.pool1(torch.relu(self.conv1(x)))
-        x = self.pool2(torch.relu(self.conv2(x)))
+        x = self.pool1(torch.relu(self.conv1(x)))  # conv+relu+pool block 1
+        x = self.pool2(torch.relu(self.conv2(x)))  # conv+relu+pool block 2
         x = self.dropout(x)
-        x = x.reshape(x.size(0), -1)
+        x = x.reshape(x.size(0), -1)               # flatten for FC layers
         x = torch.relu(self.fc1(x))
         x = self.dropout(x)
-        x = torch.sigmoid(self.fc2(x))
+        x = torch.sigmoid(self.fc2(x))             # output ∈ [0, 1]
         return x
 
 

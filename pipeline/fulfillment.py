@@ -228,6 +228,8 @@ class FulfillmentModule:
     # Timer
     # ------------------------------------------------------------------
     def process_timer(self, slots):
+        """Parse a natural-language duration string (e.g. "5 minutes") into seconds.
+        Uses pytimeparse; returns -1 if parsing fails."""
         duration_str = slots.get("duration", "")
         seconds = -1
         try:
@@ -286,6 +288,8 @@ class FulfillmentModule:
     # Movies (by Laura)
     # ------------------------------------------------------------------
     def process_movies(self, intent, slots):
+        """Route movie intents to TMDB API. Handles title-based queries (cast,
+        plot, rating, director, similar), genre discovery, and trending/upcoming."""
         title = slots.get("title")
         genre = slots.get("genre")
         time_window = slots.get("time_window")
