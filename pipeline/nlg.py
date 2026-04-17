@@ -363,8 +363,31 @@ TEMPLATE_MAP = {
 }
 
 
+# cap_warning -> message template. Keyed by (intent, level).
+CAP_WARNING_TEMPLATES = {
+    ("feed_pet",      "max"): "{name} is already full! Maybe wait a bit before feeding again.",
+    ("play_with_pet", "min"): "{name} is too tired to play right now. How about a nap?",
+    ("pet_the_cat",   "max"): "{name} is already as happy as can be!",
+    ("wash_pet",      "max"): "{name} is squeaky clean already!",
+    ("put_to_sleep",  "max"): "{name} is well-rested and not sleepy at all.",
+    ("wake_up_pet",   "min"): "{name} is too tired to be woken up. Let them rest.",
+    ("give_treat",    "max"): "{name} is already happy and doesn't need a treat right now.",
+}
+
+
+def _format_cap_warning(intent, api_response):
+    cap = api_response.get("cap_warning", {})
+    name = api_response.get("pet_name", "your pet")
+    template = CAP_WARNING_TEMPLATES.get((intent, cap.get("level")))
+    if template is None:
+        return f"{name} can't do that right now."
+    return template.format(name=name)
+
+
 def _generate_template(intent_data, api_response):
     intent = intent_data.get("intent", "")
+    if api_response.get("cap_warning"):
+        return _format_cap_warning(intent, api_response)
     handler = TEMPLATE_MAP.get(intent)
     if handler is None:
         return f"I'm not sure how to respond to the intent '{intent}'."
@@ -382,7 +405,7 @@ _llm_cache = {}
 
 
 def _load_llm():
-    """Load distilgpt2 model and tokenizer (cached)."""
+    """Load SmolLM2-360M-Instruct model and tokenizer (cached)."""
     if "model" not in _llm_cache:
         from transformers import AutoModelForCausalLM, AutoTokenizer
         model_name = "HuggingFaceTB/SmolLM2-360M-Instruct"
@@ -419,26 +442,57 @@ ROLE_MAP = {
 }
 
 
-def _build_prompt(intent_data, api_response):
-    """Build a prompt following professor's recommended style."""
+def _build_messages(intent_data, api_response):
+    """Build system+user message pair for chat-formatted LLM generation."""
     intent = intent_data.get("intent", "unknown")
     role = ROLE_MAP.get(intent, "a helpful assistant")
 
-    prompt = f"You are {role}. Write a complete sentence from the following data: {api_response}\nResponse:"
-    return prompt
+    system = (
+        f"You are {role} inside a voice assistant. "
+        f"The action described in the data has ALREADY happened successfully. "
+        f"Your job: confirm it to the user in ONE short, upbeat, natural spoken sentence. "
+        f"Rules: no markdown, no quotes, no lists, no mention of the data structure, "
+        f"no questions back to the user. Do not speculate about future actions."
+    )
+    user = f"Data: {api_response}"
+    return [
+        {"role": "system", "content": system},
+        {"role": "user",   "content": user},
+    ]
 
 
 def _generate_llm(intent_data, api_response):
-    """Generate a response using distilgpt2."""
+    """Generate a one-sentence response using SmolLM2-360M-Instruct."""
     import torch
 
     model, tokenizer = _load_llm()
-    prompt = _build_prompt(intent_data, api_response)
+    messages = _build_messages(intent_data, api_response)
 
-    inputs = tokenizer(prompt, return_tensors="pt", truncation=True, max_length=256)
+    try:
+        prompt_str = tokenizer.apply_chat_template(
+            messages,
+            add_generation_prompt=True,
+            tokenize=False,
+        )
+    except Exception:
+        prompt_str = (
+            f"<|im_start|>system\n{messages[0]['content']}<|im_end|>\n"
+            f"<|im_start|>user\n{messages[1]['content']}<|im_end|>\n"
+            f"<|im_start|>assistant\n"
+        )
+
+    if not isinstance(prompt_str, str):
+        prompt_str = "".join(prompt_str) if isinstance(prompt_str, list) else str(prompt_str)
+
+    encoded = tokenizer(prompt_str, return_tensors="pt")
+    input_ids      = encoded.input_ids
+    attention_mask = encoded.attention_mask
+    prompt_len = input_ids.shape[-1]
+
     with torch.no_grad():
         outputs = model.generate(
-            **inputs,
+            input_ids=input_ids,
+            attention_mask=attention_mask,
             max_new_tokens=80,
             do_sample=True,
             temperature=0.7,
@@ -446,17 +500,35 @@ def _generate_llm(intent_data, api_response):
             pad_token_id=tokenizer.eos_token_id,
         )
 
-    full_text = tokenizer.decode(outputs[0], skip_special_tokens=True)
-    # Extract only the generated part (after the prompt)
-    response = full_text[len(prompt):].strip()
+    generated_ids = outputs[0][prompt_len:]
+    response = tokenizer.decode(generated_ids, skip_special_tokens=True).strip()
 
-    # Take only the first sentence/line to keep it clean
-    for sep in ["\n", ". ", "! ", "? "]:
-        if sep in response:
-            response = response[:response.index(sep) + len(sep.strip())]
-            break
+    response = _first_sentence(response)
 
-    return response if response else _generate_template(intent_data, api_response)
+    if not response:
+        print(f"[NLG] LLM produced empty output for intent={intent_data.get('intent')}; "
+              f"falling back to template")
+        return _generate_template(intent_data, api_response)
+    return response
+
+
+_ABBREVIATIONS = {"dr", "mr", "mrs", "ms", "st", "vs", "jr", "sr", "prof",
+                  "gen", "gov", "sgt", "cpl", "pvt", "capt", "lt", "col",
+                  "no", "vol", "dept", "est", "approx", "inc", "ltd", "co"}
+
+
+def _first_sentence(text):
+    """Keep only the first real sentence. Handles abbreviations like 'Dr.' """
+    import re
+    for m in re.finditer(r'([.!?])\s', text):
+        pos = m.start()
+        word_before = text[:pos].rsplit(None, 1)[-1].lower().rstrip(".") if text[:pos].rsplit(None, 1) else ""
+        if word_before in _ABBREVIATIONS:
+            continue
+        return text[:pos + 1]
+    if text and text[-1] in ".!?":
+        return text
+    return text
 
 
 # ---------------------------------------------------------------------------
@@ -512,10 +584,17 @@ def _derive_emotion(intent, api_response):
     1. Hard failure (fulfillment raised, caught in app.py with type='error')
     2. Soft failure (API returned but expected data field empty/missing)
     3. Normal — static intent → emotion table
+
+    Pet cap_warning is a soft refusal — emit "calm" so we sound gentle,
+    not apologetic (it isn't an error) and not excited (nothing happened).
     """
     # Tier 1 — hard failure
     if api_response.get("type") == "error":
         return "apologetic"
+
+    # Pet cap warning (action refused because stat at limit)
+    if api_response.get("cap_warning"):
+        return "calm"
 
     # Tier 2 — soft failure
     key = EXPECTED_DATA_KEY.get(intent)
@@ -555,14 +634,24 @@ def process(intent_data, api_response, method="template"):
     if api_response is None:
         api_response = {}
 
-    if method == "llm":
+    # Cap warnings are deterministic refusals — always go through template,
+    # even in LLM mode, to avoid the model hallucinating that the action
+    # succeeded.
+    if api_response.get("cap_warning"):
+        text = _generate_template(intent_data, api_response)
+    elif method == "llm":
         try:
             text = _generate_llm(intent_data, api_response)
+            print(f"[NLG] method=llm  output='{text[:80]}'")
         except Exception as e:
-            print(f"LLM generation failed ({e}), falling back to template.")
+            import traceback
+            print(f"[NLG] LLM generation FAILED ({type(e).__name__}: {e}), "
+                  f"falling back to template.")
+            traceback.print_exc()
             text = _generate_template(intent_data, api_response)
     else:
         text = _generate_template(intent_data, api_response)
+        print(f"[NLG] method=template  output='{text[:80]}'")
 
     emotion = _derive_emotion(intent_data.get("intent", ""), api_response)
     return {"text": text, "emotion": emotion}

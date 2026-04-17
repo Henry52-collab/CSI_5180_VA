@@ -14,6 +14,7 @@ Pet state + integration by Fengshou.
 
 from dotenv import load_dotenv
 import os
+import time
 from pytimeparse import parse as parse_duration
 
 from pipeline.utils.weather import WeatherAPIModule
@@ -31,16 +32,76 @@ def random_float(min_val = -0.25, max_val = 0.25):
 
 
 class PetState:
-    def __init__(self):
+    # Natural decay (points per second). Tuned so changes are visible
+    # over a few minutes of demo time without being hectic.
+    DECAY_PER_SEC = {
+        "hunger":      2 / 30,    # -2/min  (gets hungry)
+        "happiness":   1 / 30,    # -1/min  (gets bored)
+        "energy":      0.5 / 30,  # -0.5/min (slowly tired)
+        "cleanliness": 1 / 30,    # -1/min  (slowly dirty)
+    }
+
+    # action -> (stat, "max"|"min", threshold). When violated, the
+    # action is refused and a cap_warning is returned instead.
+    CAP_RULES = {
+        "feed_pet":      ("hunger",      "max", 95),
+        "play_with_pet": ("energy",      "min",  5),
+        "pet_the_cat":   ("happiness",   "max", 95),
+        "wash_pet":      ("cleanliness", "max", 95),
+        "put_to_sleep":  ("energy",      "max", 95),
+        "wake_up_pet":   ("energy",      "min",  5),
+        "give_treat":    ("happiness",   "max", 95),
+    }
+
+    def __init__(self, system_state=None):
         self.name = "Doro"
         self.hunger = 50
         self.happiness = 50
         self.energy = 50
         self.cleanliness = 50
+        self.last_tick = time.time()
+        self._system_state = system_state
+
+    def _apply_decay(self):
+        """Idempotent: decay all stats by elapsed seconds since last_tick.
+        Only decays when the system is AWAKE — Doro sleeps when nobody is home."""
+        now = time.time()
+        if self._system_state and not self._system_state.get("awake"):
+            self.last_tick = now
+            return
+        elapsed = now - self.last_tick
+        if elapsed <= 0:
+            return
+        self.hunger      = max(0, self.hunger      - elapsed * self.DECAY_PER_SEC["hunger"])
+        self.happiness   = max(0, self.happiness   - elapsed * self.DECAY_PER_SEC["happiness"])
+        self.energy      = max(0, self.energy      - elapsed * self.DECAY_PER_SEC["energy"])
+        self.cleanliness = max(0, self.cleanliness - elapsed * self.DECAY_PER_SEC["cleanliness"])
+        self.last_tick = now
+
+    def _check_cap(self, action):
+        """Return None if action is allowed, else a cap_warning dict."""
+        rule = self.CAP_RULES.get(action)
+        if not rule:
+            return None
+        stat, direction, threshold = rule
+        current = getattr(self, stat)
+        if direction == "max" and current >= threshold:
+            return {"stat": stat, "level": "max",
+                    "current": round(current), "threshold": threshold}
+        if direction == "min" and current <= threshold:
+            return {"stat": stat, "level": "min",
+                    "current": round(current), "threshold": threshold}
+        return None
 
     def apply(self, action, slots):
+        """Apply action. Returns (before, after, old_name, cap_warning)."""
         random.seed()
+        self._apply_decay()
         before = self.to_dict()
+
+        cap_warning = self._check_cap(action)
+        if cap_warning:
+            return before, before, None, cap_warning
 
         if action == "feed_pet":
             self.hunger = min(100, self.hunger + 25 * random_float())
@@ -62,11 +123,12 @@ class PetState:
             new_name = slots.get("name", self.name)
             old_name = self.name
             self.name = new_name
-            return before, self.to_dict(), old_name
+            return before, self.to_dict(), old_name, None
 
-        return before, self.to_dict(), None
+        return before, self.to_dict(), None, None
 
     def to_dict(self):
+        self._apply_decay()
         return {
             "name": self.name,
             "hunger": round(self.hunger),
@@ -253,7 +315,7 @@ class FulfillmentModule:
                 "status": self.pet_state.to_dict(),
             }
 
-        before, after, old_name = self.pet_state.apply(intent, slots)
+        before, after, old_name, cap_warning = self.pet_state.apply(intent, slots)
 
         response = {
             "type": "pet",
@@ -262,6 +324,10 @@ class FulfillmentModule:
             "status": after,
             "before": before,
         }
+
+        if cap_warning:
+            response["cap_warning"] = cap_warning
+            return response
 
         pet_name_lower = self.pet_state.name.lower()
 
@@ -276,9 +342,9 @@ class FulfillmentModule:
         if intent == "feed_pet":
             response["food_type"] = _clean_slot(slots.get("food_type"), "food")
         elif intent == "play_with_pet":
-            response["toy"] = _clean_slot(slots.get("toy"), "a toy")
+            response["toy"] = _clean_slot(slots.get("toy"), "toy")
         elif intent == "give_treat":
-            response["treat_type"] = _clean_slot(slots.get("treat_type"), "a treat")
+            response["treat_type"] = _clean_slot(slots.get("treat_type"), "treat")
         elif intent == "rename_pet" and old_name:
             response["old_name"] = old_name
             response["new_name"] = self.pet_state.name

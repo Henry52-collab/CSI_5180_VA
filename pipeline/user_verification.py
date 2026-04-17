@@ -32,7 +32,7 @@ BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 #   user_verify_svm_v3.pkl  — v3: v1 features + channel augmentations
 #   user_verify_svm_v4.pkl  — v4: v2 features + channel augmentations
 MODEL_PATH = os.path.join(BASE_DIR, "models",
-                          os.getenv("VERIFY_MODEL", "user_verify_svm.pkl"))
+                          os.getenv("VERIFY_MODEL", "user_verify_svm_v2.pkl"))
 
 # by pass code
 PASSCODE = "Doro"

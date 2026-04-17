@@ -72,14 +72,13 @@ asr = ASRModule()
 print("[2/3] Loading Intent Detection module (DistilBERT)...")
 intent_detector = IntentDetector()
 print("[3/3] Loading Fulfillment module (Pet state, movie/weather APIs)...")
-pet_state = PetState()
-fulfillment = FulfillmentModule(pet_state)
-print("\n[READY] All modules loaded. Open http://localhost:5000 in Chrome.\n")
-
 system_state = {
     "unlocked": False,
     "awake": False,
 }
+pet_state = PetState(system_state=system_state)
+fulfillment = FulfillmentModule(pet_state)
+print("\n[READY] All modules loaded. Open http://localhost:5000 in Chrome.\n")
 
 
 # ---------------------------------------------------------------------------
