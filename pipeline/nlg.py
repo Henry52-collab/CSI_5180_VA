@@ -246,6 +246,13 @@ def _template_feed_pet(intent_data, api_response):
     food = api_response.get("food_type", "food")
     name = api_response.get("pet_name", "your pet")
     mood = _pet_mood(name, api_response.get("before"), api_response.get("status"))
+    if api_response.get("favorite"):
+        templates = [
+            f"{name}'s eyes lit up! Orange is {name}'s absolute favorite!{mood}",
+            f"You gave {name} an orange and {name} went crazy for it!{mood}",
+            f"Orange! {name} devoured it in seconds. That's {name}'s favorite food!{mood}",
+        ]
+        return random.choice(templates)
     templates = [
         f"You fed {name} some {food}. Yum!{mood}",
         f"{name} happily ate the {food}!{mood}",

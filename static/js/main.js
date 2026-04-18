@@ -399,7 +399,7 @@ function updatePet(petData) {
     const action = petData.action;
     if (action && !petData.error && !petData.cap_warning
         && typeof window.doroPlayAnimation === "function") {
-        const animName = INTENT_TO_ANIM[action] || action;
+        const animName = petData.favorite ? "favorite" : (INTENT_TO_ANIM[action] || action);
         window.doroPlayAnimation(animName);
     }
 }

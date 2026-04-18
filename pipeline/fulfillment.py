@@ -402,7 +402,10 @@ class FulfillmentModule:
             return value
 
         if intent == "feed_pet":
-            response["food_type"] = _clean_slot(slots.get("food_type"), "food")
+            food = _clean_slot(slots.get("food_type"), "food")
+            response["food_type"] = food
+            if food.lower() == "orange":
+                response["favorite"] = True
         elif intent == "play_with_pet":
             response["toy"] = _clean_slot(slots.get("toy"), "toy")
         elif intent == "give_treat":
