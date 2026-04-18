@@ -101,6 +101,14 @@ const ANIMS = {
     m.scale.setScalar((m.userData.baseScale || 1) * pulse);
     return t > 0.8;
   },
+  favorite: (m, t) => {
+    const decay = Math.max(0, 1 - t / 2.0);
+    m.position.y = baseY + Math.abs(Math.sin(t * 10)) * animAmp * 1.5 * decay;
+    m.rotation.y = t * Math.PI * 3;
+    const pulse = 1 + Math.sin(t * 14) * 0.12 * decay;
+    m.scale.setScalar((m.userData.baseScale || 1) * pulse);
+    return t > 2.0;
+  },
 };
 
 function resetModel(m) {

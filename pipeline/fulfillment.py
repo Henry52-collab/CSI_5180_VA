@@ -404,7 +404,7 @@ class FulfillmentModule:
         if intent == "feed_pet":
             food = _clean_slot(slots.get("food_type"), "food")
             response["food_type"] = food
-            if food.lower() == "orange":
+            if food.lower() == "orange" and random.random() < 0.5:
                 response["favorite"] = True
         elif intent == "play_with_pet":
             response["toy"] = _clean_slot(slots.get("toy"), "toy")
