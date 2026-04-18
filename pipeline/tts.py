@@ -139,27 +139,56 @@ def _aiff_to_wav_bytes(aiff_path):
         except Exception: pass
 
 
+def _process_macos_say(text, emotion):
+    """macOS-native TTS via the `say` CLI command.
+
+    pyttsx3's nsss driver crashes in Flask worker threads (needs the main
+    thread's NSRunLoop). The `say` command runs as a separate process, so
+    it works from any thread. Outputs AIFF → converted to WAV for Chrome.
+    """
+    params = PROSODY_BY_EMOTION.get(emotion, PROSODY_BY_EMOTION["neutral"])
+    rate = BASE_RATE + params["rate_delta"]
+
+    tmp = tempfile.NamedTemporaryFile(suffix=".aiff", delete=False)
+    tmp.close()
+
+    try:
+        subprocess.run(
+            ["say", "-o", tmp.name, "--rate", str(rate), text],
+            check=True, capture_output=True, timeout=15,
+        )
+
+        if not os.path.exists(tmp.name) or os.path.getsize(tmp.name) < 100:
+            raise RuntimeError("macOS say command produced empty audio")
+
+        return _aiff_to_wav_bytes(tmp.name)
+    finally:
+        try:
+            os.unlink(tmp.name)
+        except Exception:
+            pass
+
+
 def _process_pyttsx3(text, emotion):
     """Render text to audio bytes using OS-level simple TTS.
 
-    Windows/Linux: pyttsx3 writes WAV directly.
-    macOS:         pyttsx3 writes AIFF (Chrome won't play inline) → convert to WAV.
+    macOS: delegates to `say` command (pyttsx3 nsss driver is broken in threads).
+    Windows/Linux: uses pyttsx3 directly → WAV output.
     """
+    if sys.platform == "darwin":
+        return _process_macos_say(text, emotion)
+
     import pyttsx3
 
     params = PROSODY_BY_EMOTION.get(emotion, PROSODY_BY_EMOTION["neutral"])
 
-    # Fresh engine per call; pyttsx3 has known issues with engine reuse across
-    # threads, and our request rate is low enough not to matter.
     engine = pyttsx3.init()
     _pick_english_voice(engine)
     engine.setProperty("rate", BASE_RATE + params["rate_delta"])
     engine.setProperty("volume",
                        max(0.0, min(1.0, BASE_VOLUME + params["volume_delta"])))
 
-    is_mac = sys.platform == "darwin"
-    suffix = ".aiff" if is_mac else ".wav"
-    tmp = tempfile.NamedTemporaryFile(suffix=suffix, delete=False)
+    tmp = tempfile.NamedTemporaryFile(suffix=".wav", delete=False)
     tmp.close()
 
     try:
@@ -168,19 +197,10 @@ def _process_pyttsx3(text, emotion):
         engine.stop()
 
         if not os.path.exists(tmp.name) or os.path.getsize(tmp.name) < 100:
-            raise RuntimeError(
-                "pyttsx3 produced empty audio — likely nsss threading issue on macOS"
-            )
+            raise RuntimeError("pyttsx3 produced empty audio")
 
-        if is_mac:
-            data = _aiff_to_wav_bytes(tmp.name)
-        else:
-            with open(tmp.name, "rb") as f:
-                data = f.read()
-
-        if len(data) < 100:
-            raise RuntimeError("pyttsx3 audio output is too small, likely corrupt")
-        return data
+        with open(tmp.name, "rb") as f:
+            return f.read()
     finally:
         try:
             os.unlink(tmp.name)
