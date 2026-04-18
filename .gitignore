@@ -46,3 +46,15 @@ test_verify_result.txt
 # Personal notes (local only)
 CLAUDE.md
 docs/
+
+# Dev-only files (not part of submission)
+.claude/
+planning/
+Examples/
+FRONTEND_NOTES.md
+REVIEW_FINDINGS.md
+VERIFICATION_NOTES.md
+Winter2026-CSI5180-ProjectDefinition.pdf
+bootstrap.py
+static/record.html
+training/test_*.py
