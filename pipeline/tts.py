@@ -165,10 +165,22 @@ def _process_pyttsx3(text, emotion):
     try:
         engine.save_to_file(text, tmp.name)
         engine.runAndWait()
+        engine.stop()
+
+        if not os.path.exists(tmp.name) or os.path.getsize(tmp.name) < 100:
+            raise RuntimeError(
+                "pyttsx3 produced empty audio — likely nsss threading issue on macOS"
+            )
+
         if is_mac:
-            return _aiff_to_wav_bytes(tmp.name)
-        with open(tmp.name, "rb") as f:
-            return f.read()
+            data = _aiff_to_wav_bytes(tmp.name)
+        else:
+            with open(tmp.name, "rb") as f:
+                data = f.read()
+
+        if len(data) < 100:
+            raise RuntimeError("pyttsx3 audio output is too small, likely corrupt")
+        return data
     finally:
         try:
             os.unlink(tmp.name)
